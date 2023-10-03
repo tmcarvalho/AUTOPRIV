@@ -7,6 +7,10 @@ name = "pypi"
 kaggle = "*"
 opendatasets = "*"
 pandas = "*"
+scikit-learn = "*"
+imbalanced-learn = "*"
+xgboost = "*"
+pika = "*"
 
 [dev-packages]
 ipykernel = "*"

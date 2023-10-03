@@ -161,3 +161,9 @@ cython_debug/
 
 # VSCode
 .DS_Store
+
+# Data files
+data
+
+# kaggle token
+kaggle.json

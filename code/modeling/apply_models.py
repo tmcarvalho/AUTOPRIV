@@ -2,12 +2,16 @@
 This script will modeling data
 """
 import os
+import re
+import warnings
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
-from modeling import evaluate_model
-import re
+from modelingBO import evaluate_model_bo
+from modelingSH import evaluate_model_sh
+from modelingHB import evaluate_model_hb
 
+warnings.filterwarnings(action='ignore', category=FutureWarning)
 
 def save_results(file, args, results):
     """Create a folder if doesn't exist and save results
@@ -66,8 +70,12 @@ def modeling_ppt(file, args):
     y_test = test_data.iloc[:, -1]
 
     # predictive performance
-    results = evaluate_model(x_train, x_test, y_train, y_test)
-    
+    if args.opt == 'BO':
+        results = evaluate_model_bo(x_train, x_test, y_train, y_test)
+    elif args.opt == 'HB':
+        results = evaluate_model_hb(x_train, x_test, y_train, y_test)
+    else: 
+        results = evaluate_model_sh(x_train, x_test, y_train, y_test)
     # save validation and test results
     save_results(file, args, results)
 
@@ -106,5 +114,10 @@ def modeling_privatesmote_and_gans(file, args):
     y_test = orig_data.iloc[index, -1]
 
     #if (y_train.value_counts().nunique() != 1):
-    results = evaluate_model(x_train, x_test, y_train, y_test)
+    if args.opt == 'BO':
+        results = evaluate_model_bo(x_train, x_test, y_train, y_test)
+    elif args.opt == 'HB':
+        results = evaluate_model_hb(x_train, x_test, y_train, y_test)
+    else: 
+        results = evaluate_model_sh(x_train, x_test, y_train, y_test)
     save_results(file, args, results)

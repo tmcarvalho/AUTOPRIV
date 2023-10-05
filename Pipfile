@@ -9,6 +9,9 @@ scikit-learn = "*"
 xgboost = "*"
 pika = "*"
 imblearn = "*"
+opendatasets = "*"
+scikit-optimize = "*"
+numpy = "==1.22.3"
 
 [dev-packages]
 

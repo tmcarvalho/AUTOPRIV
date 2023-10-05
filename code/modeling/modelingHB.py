@@ -53,7 +53,7 @@ def evaluate_model_hb(x_train, x_test, y_train, y_test):
     param2 = {}
     param2['classifier__n_estimators'] = [100, 250, 500]
     param2['classifier__max_depth'] = [4, 7, 10]
-    param2['classifier__learning_rate'] = [0.1, 0.01]
+    param2['classifier__learning_rate'] = [0.01, 0.1]
     param2['classifier'] = [booster]
 
     param3 = {}

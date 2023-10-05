@@ -3,15 +3,19 @@ This script will apply SMOTE technique in the single out cases.
 """
 # %%
 #!/usr/bin/env python
+import warnings
 import functools
 import threading
 import argparse
-import pika
 from apply_models import modeling_privatesmote_and_gans, modeling_ppt
+import pika
 
+warnings.filterwarnings(action='ignore', category=FutureWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 #%%
 parser = argparse.ArgumentParser(description='Master Example')
 parser.add_argument('--type', type=str, help='Strategy type', default="ppt")
+parser.add_argument('--opt', type=str, help='Optimization strategy', default="BO")
 parser.add_argument('--input_folder', type=str, help='Input folder', default="./input")
 parser.add_argument('--output_folder', type=str, help='Output folder', default="./output")
 args = parser.parse_args()
@@ -86,5 +90,7 @@ connection.close()
 # find . -name ".DS_Store" -delete
 # python3 code/modeling/task.py  --input_folder "data/deep_learning"
 # python3 code/modeling/worker.py --type "ppt" --input_folder "PPT_ARX/Cleaned" --output_folder "output/modeling/PPT_ARX"
-# python3 code/modeling/worker.py --type "gans" --input_folder "data/deep_learning" --output_folder "output/modelingBO/deep_learning"
+# python3 code/modeling/worker.py --type "gans" --opt "BO" --input_folder "data/deep_learning" --output_folder "output/modelingBO/deep_learning"
+# python3 code/modeling/worker.py --type "gans" --opt "HB" --input_folder "data/deep_learning" --output_folder "output/modelingHB/deep_learning"
+# python3 code/modeling/worker.py --type "gans" --opt "SH" --input_folder "data/deep_learning" --output_folder "output/modelingSH/deep_learning"
 # python3 code/modeling/worker.py --type "PrivateSMOTE" --input_folder "output/oversampled/PrivateSMOTE_force_laplace" --output_folder "output/modeling/PrivateSMOTE_force_laplace"

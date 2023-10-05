@@ -168,3 +168,6 @@ data
 
 # kaggle token
 kaggle.json
+
+# output files
+output

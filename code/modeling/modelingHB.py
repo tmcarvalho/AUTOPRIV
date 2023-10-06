@@ -62,11 +62,8 @@ def evaluate_model_hb(x_train, x_test, y_train, y_test):
     param3['classifier'] = [reg]
 
     param4 = {}
-    param4['classifier__hidden_layer_sizes'] = [[n_feat], [n_feat // 2], [int(n_feat * (2 / 3))], [n_feat, n_feat // 2],
-                                              [n_feat, int(n_feat * (2 / 3))], [n_feat // 2, int(n_feat * (2 / 3))],
-                                              [n_feat, n_feat // 2, int(n_feat * (2 / 3))]
-                                              ]
-    param4['classifier__alpha'] = [5e-3, 1e-3, 1e-4]
+    param4['classifier__hidden_layer_sizes'] = [[n_feat // 2], [int(n_feat * (2 / 3))], [n_feat]]
+    param4['classifier__alpha'] = [1e-2, 1e-3, 1e-4]
     param4['classifier__max_iter'] = [10000, 100000]
     param4['classifier'] = [nnet]
 

@@ -10,7 +10,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import make_scorer, roc_auc_score
 from skopt import BayesSearchCV
-from skopt.space import Real, Categorical, Integer
+from skopt.space import Real, Integer
 from sklearn.model_selection import RepeatedKFold
 from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier
@@ -38,7 +38,7 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
             objective='binary:logistic',
             eval_metric='logloss',
             use_label_encoder=False,
-            random_state=seed)
+            random_state=seed, early_stopping_rounds=10)
 
     reg = LogisticRegression(random_state=seed)
     nnet = MLPClassifier(random_state=seed)
@@ -63,7 +63,7 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
     param3['classifier'] = [reg]
 
     param4 = {}
-    param4['classifier__hidden_layer_sizes'] = Integer(int(n_feat * (2 / 3)), n_feat)
+    param4['classifier__hidden_layer_sizes'] = Integer(int(n_feat // 2), n_feat)
     param4['classifier__alpha'] = Real(1e-4, 1e-2)
     param4['classifier__max_iter'] = Integer(10000, 100000)
     param4['classifier'] = [nnet]
@@ -81,7 +81,7 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
     grid = BayesSearchCV(
         pipeline,
         search_spaces=params,
-        n_iter=32,
+        n_iter=50,
         cv=RepeatedKFold(n_splits=5, n_repeats=2, random_state=42),
         scoring=scoring,
         return_train_score=True,

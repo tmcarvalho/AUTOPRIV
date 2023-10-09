@@ -38,9 +38,12 @@ def evaluate_model_hb(x_train, x_test, y_train, y_test):
             eval_metric='logloss',
             use_label_encoder=False,
             random_state=seed)
+            #early_stopping_rounds=10)
 
     reg = LogisticRegression(random_state=seed)
-    nnet = MLPClassifier(random_state=seed)
+    nnet = MLPClassifier(random_state=seed,
+                         early_stopping=True,
+                         n_iter_no_change=10)
 
     n_feat = x_train.shape[1]
 
@@ -80,7 +83,7 @@ def evaluate_model_hb(x_train, x_test, y_train, y_test):
     grid = HalvingRandomSearchCV(
         pipeline,
         param_distributions=params,
-        cv=RepeatedKFold(n_splits=5, n_repeats=2, random_state=42),
+        cv=RepeatedKFold(n_splits=5, n_repeats=2, random_state=1),
         scoring=scoring,
         return_train_score=True,
         n_jobs=-1).fit(x_train, y_train)

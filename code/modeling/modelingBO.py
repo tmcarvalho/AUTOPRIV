@@ -10,8 +10,13 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import make_scorer, roc_auc_score
 from skopt import BayesSearchCV
+<<<<<<< HEAD
 from skopt.space import Real, Integer
 from sklearn.model_selection import RepeatedKFold
+=======
+from skopt.space import Real, Categorical, Integer
+from sklearn.model_selection import RepeatedStratifiedKFold
+>>>>>>> 3b16ca4 (stratified kfold)
 from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier
 
@@ -81,8 +86,13 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
     grid = BayesSearchCV(
         pipeline,
         search_spaces=params,
+<<<<<<< HEAD
         n_iter=50,
         cv=RepeatedKFold(n_splits=5, n_repeats=2, random_state=42),
+=======
+        n_iter=32,
+        cv=RepeatedStratifiedKFold(n_splits=5, n_repeats=2, random_state=1),
+>>>>>>> 3b16ca4 (stratified kfold)
         scoring=scoring,
         return_train_score=True,
         n_jobs=-1).fit(x_train, y_train)

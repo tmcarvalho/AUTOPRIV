@@ -10,7 +10,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import make_scorer, roc_auc_score
 from sklearn.experimental import enable_halving_search_cv #noqa
-from sklearn.model_selection import HalvingGridSearchCV, RepeatedKFold
+from sklearn.model_selection import HalvingGridSearchCV, RepeatedStratifiedKFold
 from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier
 
@@ -80,7 +80,7 @@ def evaluate_model_sh(x_train, x_test, y_train, y_test):
     grid = HalvingGridSearchCV(
         pipeline,
         param_grid=params,
-        cv=RepeatedKFold(n_splits=5, n_repeats=2, random_state=42),
+        cv=RepeatedStratifiedKFold(n_splits=5, n_repeats=2, random_state=1),
         scoring=scoring,
         return_train_score=True,
         n_jobs=-1).fit(x_train, y_train)

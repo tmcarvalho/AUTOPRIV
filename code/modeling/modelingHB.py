@@ -37,7 +37,8 @@ def evaluate_model_hb(x_train, x_test, y_train, y_test):
     #         eval_metric='logloss',
     #         use_label_encoder=False,
     #         random_state=seed)
-    grb = GradientBoostingClassifier(n_iter_no_change=10,
+    grb = GradientBoostingClassifier(loss='log_loss',
+                                    n_iter_no_change=10,
                                     random_state=seed)
 
     sdg = SGDClassifier(early_stopping=True,
@@ -76,7 +77,7 @@ def evaluate_model_hb(x_train, x_test, y_train, y_test):
     param4['classifier'] = [nnet]
 
     # define metric functions -- doens't accept multi measures
-    scoring = make_scorer(roc_auc_score, max_fpr=0.001, needs_proba=True)
+    scoring = make_scorer(roc_auc_score, max_fpr=0.001, needs_proba=False)
 
     pipeline = Pipeline([('classifier', sdg)])
     params = [param2, param3, param4]

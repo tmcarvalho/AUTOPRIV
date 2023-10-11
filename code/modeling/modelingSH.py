@@ -31,7 +31,8 @@ def evaluate_model_sh(x_train, x_test, y_train, y_test):
     seed = np.random.seed(1234)
 
     # initiate models
-    grb = GradientBoostingClassifier(n_iter_no_change=10,
+    grb = GradientBoostingClassifier(loss='log_loss',
+                                    n_iter_no_change=10,
                                     random_state=seed)
     
     sdg = SGDClassifier(early_stopping=True,
@@ -64,7 +65,7 @@ def evaluate_model_sh(x_train, x_test, y_train, y_test):
     param4['classifier'] = [nnet]
 
     # define metric functions -- doens't accept multi measures
-    scoring = make_scorer(roc_auc_score, max_fpr=0.001, needs_proba=True)
+    scoring = make_scorer(roc_auc_score, max_fpr=0.001, needs_proba=False)
 
     pipeline = Pipeline([('classifier', sdg)])
     params = [param2, param3, param4]
@@ -93,7 +94,6 @@ def evaluate_model_sh(x_train, x_test, y_train, y_test):
     validation['model'] = validation['model'].apply(lambda x: 'Gradient Boosting' if 'GradientBoostingClassifier' in str(x) else x)
     validation['model'] = validation['model'].apply(lambda x: 'Neural Network' if 'MLPClassifier' in str(x) else x)
     validation['time'] = (time.time() - training)/60
-
 
     print("Start modeling in out of sample")
 

@@ -10,7 +10,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import make_scorer, roc_auc_score
 from skopt import BayesSearchCV
-from skopt.space import Real, Categorical, Integer
+from skopt.space import Real, Integer
 from sklearn.model_selection import RepeatedStratifiedKFold
 from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier

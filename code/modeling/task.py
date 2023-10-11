@@ -42,8 +42,8 @@ channel.queue_bind(exchange='dlx', routing_key='task_queue', queue=dl_queue.meth
 
 for file in os.listdir(args.input_folder):
     f = list(map(int, re.findall(r'\d+', file.split('_')[0])))[0]
-    # if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87]:
-    if f == 2:
+    if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87]:
+    #if f == 2:
         print(file)
         put_file_queue(channel, file)
 

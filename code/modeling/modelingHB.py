@@ -59,7 +59,7 @@ def evaluate_model_hb(x_train, x_test, y_train, y_test):
     # param1['classifier'] = [xgb]
 
     param2 = {}
-    param2['classifier__alpha'] = [1e-3, 1e-4, 1e-5]
+    param2['classifier__alpha'] = [1e-5, 1e-4, 1e-3]
     param2['classifier__max_iter'] = [1000, 10000, 1000000]
     param2['classifier__eta0'] = [0, 0.01, 0.1, 0.5, 1]
     param2['classifier'] = [sdg]
@@ -71,8 +71,8 @@ def evaluate_model_hb(x_train, x_test, y_train, y_test):
     param3['classifier'] = [grb]
 
     param4 = {}
-    param4['classifier__hidden_layer_sizes'] = [[n_feat // 2], [int(n_feat * (2 / 3))], [n_feat]]
-    param4['classifier__alpha'] = [1e-2, 1e-3, 1e-4]
+    param4['classifier__hidden_layer_sizes'] = [[int(n_feat // 2)], [int(n_feat * (2 / 3))], [n_feat]]
+    param4['classifier__alpha'] = [1e-4, 1e-3, 1e-2]
     param4['classifier__max_iter'] = [1000, 10000, 1000000]
     param4['classifier'] = [nnet]
 

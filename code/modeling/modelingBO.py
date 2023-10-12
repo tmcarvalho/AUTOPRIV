@@ -1,7 +1,6 @@
 """Predictive performance
 This script will test the predictive performance of each data set with Bayes hyperparameter optimization.
 """
-import warnings
 import time
 import pandas as pd
 import numpy as np
@@ -13,11 +12,46 @@ from skopt import BayesSearchCV
 from skopt.space import Real, Integer
 from sklearn.model_selection import RepeatedStratifiedKFold
 from sklearn.pipeline import Pipeline
-from xgboost import XGBClassifier
+import concurrent.futures
+import multiprocessing
 
-warnings.filterwarnings(action='ignore', category=FutureWarning)
 
-# %% evaluate a model
+# %% parallelize the code for testing results
+def outofsample_worker(i, x_train, x_test, y_train, y_test, grid, validation):
+    score_cv = {'params': [], 'model': [], 'test_roc_auc': []}
+    # set each model for prediction on test
+    clf_best = grid.best_estimator_.set_params(**grid.cv_results_['params'][i]).fit(x_train, y_train)
+    clf = clf_best.predict(x_test)
+    score_cv['params'].append(str(grid.cv_results_['params'][i]))
+    score_cv['model'].append(validation.loc[i, 'model'])
+    score_cv['test_roc_auc'].append(roc_auc_score(y_test, clf))
+
+    return score_cv
+
+def outofsample(x_train, x_test, y_train, y_test, grid, validation):
+    num_workers = multiprocessing.cpu_count()
+    outofsample_start = time.time()
+
+    with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
+        futures = [executor.submit(outofsample_worker, i, x_train, x_test, y_train, y_test, grid, validation) for i in range(len(validation))]
+        concurrent.futures.wait(futures)
+
+    score_cv = {
+        'params': [],
+        'model': [],
+        'test_roc_auc': [],
+        'time': [],
+    }
+    for result in futures:
+        result_cv = result.result()
+        score_cv['params'].extend(result_cv['params'])
+        score_cv['model'].extend(result_cv['model'])
+        score_cv['test_roc_auc'].extend(result_cv['test_roc_auc'])
+        score_cv['time'] = (time.time() - outofsample_start) / 60
+    
+    return pd.DataFrame(score_cv)
+
+# evaluate a model
 def evaluate_model_bo(x_train, x_test, y_train, y_test):
     """Evaluatation
 
@@ -79,7 +113,7 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
     grid = BayesSearchCV(
         pipeline,
         search_spaces=params,
-        n_iter=50,
+        n_iter=30,
         cv=RepeatedStratifiedKFold(n_splits=5, n_repeats=2, random_state=1),
         scoring=scoring,
         return_train_score=True,
@@ -87,9 +121,6 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
 
     print(f'It takes {(time.time() - training)/60} minutes')
 
-    score_cv = {
-    'params':[], 'model':[], 'test_roc_auc':[]
-    }
     # Store results from grid search
     validation = pd.DataFrame(grid.cv_results_)
     validation['model'] = validation['param_classifier']
@@ -100,15 +131,7 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
 
     print("Start modeling in out of sample")
 
-    outofsample = time.time()
-    for i in range(len(validation)):
-        # set each model for prediction on test
-        clf_best = grid.best_estimator_.set_params(**grid.cv_results_['params'][i]).fit(x_train, y_train)
-        clf = clf_best.predict(x_test)
-        score_cv['params'].append(str(grid.cv_results_['params'][i]))
-        score_cv['model'].append(validation.loc[i, 'model'])
-        score_cv['test_roc_auc'].append(roc_auc_score(y_test, clf))
-        score_cv['time'] = (time.time() - outofsample)/60
-    score_cv = pd.DataFrame(score_cv)
+    # Call the outofsample function
+    score_outofsample = outofsample(x_train, x_test, y_train, y_test, grid, validation)
 
-    return [validation, score_cv]
+    return [validation, score_outofsample]

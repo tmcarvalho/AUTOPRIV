@@ -112,11 +112,15 @@ def modeling_privatesmote_and_gans(file, args):
     x_test = orig_data.iloc[index, :-1]
     y_test = orig_data.iloc[index, -1]
 
-    #if (y_train.value_counts().nunique() != 1):
-    if args.opt == 'BO':
-        results = evaluate_model_bo(x_train, x_test, y_train, y_test)
-    elif args.opt == 'HB':
-        results = evaluate_model_hb(x_train, x_test, y_train, y_test)
-    else: 
-        results = evaluate_model_sh(x_train, x_test, y_train, y_test)
-    save_results(file, args, results)
+    try:
+        if args.opt == 'BO':
+            results = evaluate_model_bo(x_train, x_test, y_train, y_test)
+        elif args.opt == 'HB':
+            results = evaluate_model_hb(x_train, x_test, y_train, y_test)
+        else: 
+            results = evaluate_model_sh(x_train, x_test, y_train, y_test)
+        save_results(file, args, results)
+    except:
+        with open('output/failed_files.txt', 'w') as file:
+            # Write content to the file
+            file.write(f'{args.input_folder}/{file}')

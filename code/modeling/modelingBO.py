@@ -2,11 +2,13 @@
 This script will test the predictive performance of each data set with Bayes hyperparameter optimization.
 """
 import time
+import warnings
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.linear_model import SGDClassifier
 from sklearn.neural_network import MLPClassifier
+from xgboost import XGBClassifier
 from sklearn.metrics import make_scorer, roc_auc_score
 from skopt import BayesSearchCV
 from skopt.space import Real, Integer
@@ -15,6 +17,8 @@ from sklearn.pipeline import Pipeline
 import concurrent.futures
 import multiprocessing
 
+warnings.filterwarnings(action='ignore', category=FutureWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 # %% parallelize the code for testing results
 def outofsample_worker(i, x_train, x_test, y_train, y_test, grid, validation):
@@ -67,6 +71,12 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
     seed = np.random.seed(1234)
 
     # initiate models
+    xgb = XGBClassifier(
+            objective='binary:logistic',
+            eval_metric='logloss',
+            use_label_encoder=False,
+            random_state=seed)
+
     grb = GradientBoostingClassifier(loss='log_loss',
                                     n_iter_no_change=10,
                                     random_state=seed)
@@ -82,6 +92,12 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
     n_feat = x_train.shape[1]
 
     # set parameterisation
+    param1 = {}
+    param1['classifier__n_estimators'] = Integer(100, 1000)
+    param1['classifier__max_depth'] = Integer(6, 12)
+    param1['classifier__learning_rate'] = Real(0.01, 0.5)
+    param1['classifier'] = [xgb]
+
     param2 = {}
     param2['classifier__alpha'] = Real(1e-5, 1e-3)
     param2['classifier__max_iter'] = Integer(1000, 1000000)
@@ -103,8 +119,8 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
     # define metric functions -- doens't accept multi measures
     scoring = make_scorer(roc_auc_score, max_fpr=0.001, needs_proba=False)
 
-    pipeline = Pipeline([('classifier', sdg)])
-    params = [param2, param3, param4]
+    pipeline = Pipeline([('classifier', xgb)])
+    params = [param1, param2, param3, param4]
 
     print("Start modeling with CV")
     training = time.time()
@@ -124,6 +140,7 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
     # Store results from grid search
     validation = pd.DataFrame(grid.cv_results_)
     validation['model'] = validation['param_classifier']
+    validation['model'] = validation['model'].apply(lambda x: 'XGBoost' if 'XGB' in str(x) else x)
     validation['model'] = validation['model'].apply(lambda x: 'Stochastic Gradient Descent' if 'SGDClassifier' in str(x) else x)
     validation['model'] = validation['model'].apply(lambda x: 'Gradient Boosting' if 'GradientBoostingClassifier' in str(x) else x)
     validation['model'] = validation['model'].apply(lambda x: 'Neural Network' if 'MLPClassifier' in str(x) else x)

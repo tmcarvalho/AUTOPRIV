@@ -97,7 +97,6 @@ def modeling_privatesmote_and_gans(file, args):
     orig_folder = 'data/original'
     _, _, orig_files = next(os.walk(f'{orig_folder}'))
     orig_file = [fl for fl in orig_files if list(map(int, re.findall(r'\d+', fl.split('.')[0])))[0] == f[0]]
-    print(orig_file)
     orig_data = pd.read_csv(f'{orig_folder}/{orig_file[0]}')
     data = pd.read_csv(f'{args.input_folder}/{file}')
 

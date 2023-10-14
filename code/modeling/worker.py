@@ -93,4 +93,6 @@ connection.close()
 # python3 code/modeling/worker.py --type "gans" --opt "BO" --input_folder "data/deep_learning" --output_folder "output/modelingBO/deep_learning"
 # python3 code/modeling/worker.py --type "gans" --opt "HB" --input_folder "data/deep_learning" --output_folder "output/modelingHB/deep_learning"
 # python3 code/modeling/worker.py --type "gans" --opt "SH" --input_folder "data/deep_learning" --output_folder "output/modelingSH/deep_learning"
+# python3 code/modeling/worker.py --type "gans" --opt "GS" --input_folder "data/deep_learning" --output_folder "output/modelingGS/deep_learning"
+# python3 code/modeling/worker.py --type "gans" --opt "RS" --input_folder "data/deep_learning" --output_folder "output/modelingRS/deep_learning"
 # python3 code/modeling/worker.py --type "PrivateSMOTE" --input_folder "output/oversampled/PrivateSMOTE_force_laplace" --output_folder "output/modeling/PrivateSMOTE_force_laplace"

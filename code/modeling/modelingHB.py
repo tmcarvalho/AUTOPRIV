@@ -36,7 +36,9 @@ def evaluate_model_hb(x_train, x_test, y_train, y_test):
             objective='binary:logistic',
             eval_metric='logloss',
             use_label_encoder=False,
+            early_stopping_rounds=10,
             random_state=seed)
+
     grb = GradientBoostingClassifier(loss='log_loss',
                                     n_iter_no_change=10,
                                     random_state=seed)
@@ -96,29 +98,33 @@ def evaluate_model_hb(x_train, x_test, y_train, y_test):
 
     print(f'It takes {(time.time() - training)/60} minutes')
 
-    score_cv = {
-    'params':[], 'model':[], 'test_roc_auc':[]
-    }
     # Store results from grid search
     validation = pd.DataFrame(grid.cv_results_)
     validation['model'] = validation['param_classifier']
-    validation['model'] = validation['model'].apply(lambda x: 'XGBoost' if 'XGB' in str(x) else x)
-    validation['model'] = validation['model'].apply(lambda x: 'Stochastic Gradient Descent' if 'SGDClassifier' in str(x) else x)
-    validation['model'] = validation['model'].apply(lambda x: 'Gradient Boosting' if 'GradientBoostingClassifier' in str(x) else x)
-    validation['model'] = validation['model'].apply(lambda x: 'Neural Network' if 'MLPClassifier' in str(x) else x)
+    validation['model'] = validation['model'].apply(lambda x: 'XGBClassifier' if 'XGBClassifier' in str(x) else x)
+    validation['model'] = validation['model'].apply(lambda x: 'SGDClassifier' if 'SGDClassifier' in str(x) else x)
+    validation['model'] = validation['model'].apply(lambda x: 'GradientBoostingClassifier' if 'GradientBoostingClassifier' in str(x) else x)
+    validation['model'] = validation['model'].apply(lambda x: 'MLPClassifier' if 'MLPClassifier' in str(x) else x)
     validation['time'] = (time.time() - training)/60
 
     print("Start modeling in out of sample")
-    outofsample = time.time()
-    for i in range(len(validation)):
-        # set each model for prediction on test
-        clf_best = grid.best_estimator_.set_params(**grid.cv_results_['params'][i]).fit(x_train, y_train)
-        clf = clf_best.predict(x_test)
-        score_cv['params'].append(str(grid.cv_results_['params'][i]))
-        score_cv['model'].append(validation.loc[i, 'model'])
-        score_cv['test_roc_auc'].append(roc_auc_score(y_test, clf))
-        score_cv['time'] = (time.time() - outofsample)/60
+    score_cv = {
+    'params':[], 'model':[], 'test_roc_auc_estimated':[], 'test_roc_auc': [], 'opt_type': [],
+    }
 
+    # use the best estimated hyperparameter
+    grid_res = grid.predict(x_test)
+
+    # retrain the best estimator using all training data
+    clf_best = grid.best_estimator_.fit(x_train, y_train)
+    clf = clf_best.predict(x_test)
+
+    score_cv['params'].append(str(grid.best_params_))
+    score_cv['model'] = type(grid.best_estimator_.steps[-1][1]).__name__
+    score_cv['test_roc_auc_estimated'].append(roc_auc_score(y_test, grid_res))
+    score_cv['test_roc_auc'].append(roc_auc_score(y_test, clf))
+    score_cv['opt_type'].append("Hyperband")
+    
     score_cv = pd.DataFrame(score_cv)
 
     return [validation, score_cv]

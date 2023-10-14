@@ -10,6 +10,8 @@ from sklearn.preprocessing import LabelEncoder
 from modelingBO import evaluate_model_bo
 from modelingSH import evaluate_model_sh
 from modelingHB import evaluate_model_hb
+from modelingGS import evaluate_model_gs
+from modelingRS import evaluate_model_rs
 
 warnings.filterwarnings(action='ignore', category=FutureWarning)
 
@@ -117,8 +119,12 @@ def modeling_privatesmote_and_gans(file, args):
             results = evaluate_model_bo(x_train, x_test, y_train, y_test)
         elif args.opt == 'HB':
             results = evaluate_model_hb(x_train, x_test, y_train, y_test)
-        else: 
+        elif args.opt == 'SH': 
             results = evaluate_model_sh(x_train, x_test, y_train, y_test)
+        elif args.opt == 'GS': 
+            results = evaluate_model_gs(x_train, x_test, y_train, y_test)
+        else:
+            results = evaluate_model_rs(x_train, x_test, y_train, y_test)
         save_results(file, args, results)
     except:
         with open('output/failed_files.txt', 'w') as file:

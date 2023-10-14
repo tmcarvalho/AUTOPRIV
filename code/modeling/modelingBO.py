@@ -37,6 +37,7 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
     xgb = XGBClassifier(
             objective='binary:logistic',
             eval_metric='logloss',
+            early_stopping_rounds=50,
             use_label_encoder=False,
             random_state=seed)
 

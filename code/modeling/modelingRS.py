@@ -90,10 +90,10 @@ def evaluate_model_rs(x_train, x_test, y_train, y_test):
     # Train the grid search model
     grid = RandomizedSearchCV(
         pipeline,
-        search_spaces=params,
-        n_iter=50,
+        param_distributions=params,
         cv=RepeatedStratifiedKFold(n_splits=5, n_repeats=2, random_state=1),
         scoring=scoring,
+        n_iter=50,
         return_train_score=True,
         n_jobs=-1).fit(x_train, y_train)
 

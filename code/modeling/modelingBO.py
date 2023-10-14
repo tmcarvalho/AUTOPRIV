@@ -12,7 +12,7 @@ from xgboost import XGBClassifier
 from sklearn.metrics import make_scorer, roc_auc_score
 from skopt import BayesSearchCV
 from skopt.space import Real, Integer
-from sklearn.model_selection import RepeatedStratifiedKFold
+from sklearn.model_selection import RepeatedStratifiedKFold, train_test_split
 from sklearn.pipeline import Pipeline
 
 warnings.filterwarnings(action='ignore', category=FutureWarning)
@@ -33,6 +33,9 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
 
     seed = np.random.seed(1234)
 
+    # Split the training data into a training set and a validation set for early stop in XGBClassifier
+    # _, x_valid, _, y_valid = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
+    # eval_set=[(x_valid, y_valid)],
     # initiate models
     xgb = XGBClassifier(
             objective='binary:logistic',

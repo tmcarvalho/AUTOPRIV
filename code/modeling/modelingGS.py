@@ -90,8 +90,7 @@ def evaluate_model_gs(x_train, x_test, y_train, y_test):
     # Train the grid search model
     grid = GridSearchCV(
         pipeline,
-        search_spaces=params,
-        n_iter=50,
+        param_grid=params,
         cv=RepeatedStratifiedKFold(n_splits=5, n_repeats=2, random_state=1),
         scoring=scoring,
         return_train_score=True,

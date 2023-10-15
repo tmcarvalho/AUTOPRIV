@@ -10,7 +10,7 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.neural_network import MLPClassifier
 from xgboost import XGBClassifier
 from sklearn.metrics import make_scorer, roc_auc_score
-from sklearn.model_selection import RandomizedSearchCV, RepeatedStratifiedKFold
+from sklearn.model_selection import RandomizedSearchCV, RepeatedStratifiedKFold, train_test_split
 from sklearn.pipeline import Pipeline
 
 warnings.filterwarnings(action='ignore', category=FutureWarning)
@@ -32,10 +32,10 @@ def evaluate_model_rs(x_train, x_test, y_train, y_test):
     seed = np.random.seed(1234)
 
     # initiate models
+    _, x_valid, _, y_valid = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
+    # initiate models
     xgb = XGBClassifier(
             objective='binary:logistic',
-            eval_metric='logloss',
-            early_stopping_rounds=10,
             use_label_encoder=False,
             random_state=seed)
 
@@ -60,6 +60,12 @@ def evaluate_model_rs(x_train, x_test, y_train, y_test):
     param1['classifier__learning_rate'] = [0.01, 0.1, 0.3, 0.5]
     param1['classifier'] = [xgb]
 
+    xgb_fit_params = {
+    'eval_metric': 'logloss',
+    'early_stopping_rounds': 10,  # Early stopping
+    'eval_set': [(x_valid, y_valid)]  # Evaluation set
+    }
+
     param2 = {}
     param2['classifier__alpha'] = [1e-5, 1e-4, 1e-3]
     param2['classifier__max_iter'] = [1000, 10000, 1000000]
@@ -81,7 +87,7 @@ def evaluate_model_rs(x_train, x_test, y_train, y_test):
     # define metric functions
     scoring = make_scorer(roc_auc_score, max_fpr=0.001, needs_proba=False)
 
-    pipeline = Pipeline([('classifier', xgb)])
+    pipeline = Pipeline([('classifier', XGBClassifier(**xgb_fit_params))])
     params = [param1, param2, param3, param4]
 
     print("Start modeling with CV")

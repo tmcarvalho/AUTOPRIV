@@ -10,7 +10,7 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import make_scorer, roc_auc_score
 from sklearn.experimental import enable_halving_search_cv #noqa
-from sklearn.model_selection import HalvingGridSearchCV, RepeatedStratifiedKFold
+from sklearn.model_selection import HalvingGridSearchCV, RepeatedStratifiedKFold, train_test_split
 from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier
 
@@ -32,11 +32,11 @@ def evaluate_model_sh(x_train, x_test, y_train, y_test):
     seed = np.random.seed(1234)
 
     # initiate models
+    _, x_valid, _, y_valid = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
+    # initiate models
     xgb = XGBClassifier(
             objective='binary:logistic',
-            eval_metric='logloss',
             use_label_encoder=False,
-            early_stopping_rounds=10,
             random_state=seed)
     
     grb = GradientBoostingClassifier(loss='log_loss',
@@ -59,6 +59,12 @@ def evaluate_model_sh(x_train, x_test, y_train, y_test):
     param1['classifier__max_depth'] = [6, 8, 10, 12]
     param1['classifier__learning_rate'] = [0.01, 0.1, 0.3, 0.5]
     param1['classifier'] = [xgb]
+    
+    xgb_fit_params = {
+    'eval_metric': 'logloss',
+    'early_stopping_rounds': 10,  # Early stopping
+    'eval_set': [(x_valid, y_valid)]  # Evaluation set
+    }
 
     param2 = {}
     param2['classifier__alpha'] = [1e-5, 1e-4, 1e-3]
@@ -81,7 +87,7 @@ def evaluate_model_sh(x_train, x_test, y_train, y_test):
     # define metric functions -- doens't accept multi measures
     scoring = make_scorer(roc_auc_score, max_fpr=0.001, needs_proba=False)
 
-    pipeline = Pipeline([('classifier', xgb)])
+    pipeline = Pipeline([('classifier',  XGBClassifier(**xgb_fit_params))])
     params = [param1, param2, param3, param4]
 
     print("Start modeling with CV")

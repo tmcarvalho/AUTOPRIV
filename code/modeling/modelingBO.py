@@ -34,13 +34,10 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
     seed = np.random.seed(1234)
 
     # Split the training data into a training set and a validation set for early stop in XGBClassifier
-    # _, x_valid, _, y_valid = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
-    # eval_set=[(x_valid, y_valid)],
+    _, x_valid, _, y_valid = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
     # initiate models
     xgb = XGBClassifier(
             objective='binary:logistic',
-            eval_metric='logloss',
-            early_stopping_rounds=10,
             use_label_encoder=False,
             random_state=seed)
 
@@ -65,6 +62,12 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
     param1['classifier__learning_rate'] = Real(0.01, 0.5)
     param1['classifier'] = [xgb]
 
+    xgb_fit_params = {
+    'eval_metric': 'logloss',
+    'early_stopping_rounds': 10,  # Early stopping
+    'eval_set': [(x_valid, y_valid)]  # Evaluation set
+    }
+
     param2 = {}
     param2['classifier__alpha'] = Real(1e-5, 1e-3)
     param2['classifier__max_iter'] = Integer(1000, 1000000)
@@ -86,7 +89,7 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
     # define metric functions -- doens't accept multi measures
     scoring = make_scorer(roc_auc_score, max_fpr=0.001, needs_proba=False)
 
-    pipeline = Pipeline([('classifier', xgb)])
+    pipeline = Pipeline([('classifier', XGBClassifier(**xgb_fit_params))])
     params = [param1, param2, param3, param4]
 
     print("Start modeling with CV")

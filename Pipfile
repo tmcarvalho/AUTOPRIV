@@ -12,8 +12,10 @@ imblearn = "*"
 opendatasets = "*"
 scikit-optimize = "*"
 numpy = "==1.22.3"
+seaborn = "*"
 
 [dev-packages]
+ipykernel = "*"
 
 [requires]
 python_version = "3.10"

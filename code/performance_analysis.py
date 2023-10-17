@@ -82,6 +82,9 @@ results_test = pd.concat([deeplearn_testBO, deeplearn_testHB, deeplearn_testSH, 
 results_cv.loc[results_cv['technique']=='copulaGAN', 'technique'] = 'Copula GAN'
 results_test.loc[results_test['technique']=='copulaGAN', 'technique'] = 'Copula GAN'
 
+# %% remove ds38 because it failed for the majority of opt type
+results_cv = results_cv.loc[results_cv.ds != 'ds38']
+results_test = results_test.loc[results_test.ds != 'ds38']
 # %%
 # results_cv.to_csv('../output/resultsCV.csv', index=False)
 # results_test.to_csv('../output/results_test.csv', index=False)
@@ -89,12 +92,6 @@ results_test.loc[results_test['technique']=='copulaGAN', 'technique'] = 'Copula 
 # results_cv = pd.read_csv('../output/resultsCV.csv')
 
 # %%
-PROPS = {
-    'boxprops':{'facecolor':'#00BFC4', 'edgecolor':'black'},
-    'medianprops':{'color':'black'},
-    'whiskerprops':{'color':'black'},
-    'capprops':{'color':'black'}
-}
 order_technique = ['Copula GAN', 'TVAE', 'CTGAN']
 order_optype = ['GridSearch', 'RandomSearch', 'Bayes', 'Halving', 'Hyperband']
 # %%

@@ -13,6 +13,7 @@ opendatasets = "*"
 scikit-optimize = "*"
 numpy = "==1.22.3"
 seaborn = "*"
+pymfe = "*"
 
 [dev-packages]
 ipykernel = "*"

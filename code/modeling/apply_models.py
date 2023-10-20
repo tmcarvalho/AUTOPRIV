@@ -127,7 +127,7 @@ def modeling_privatesmote_and_gans(file, args):
             results = evaluate_model_rs(x_train, x_test, y_train, y_test)
         save_results(file, args, results)
     
-    except Exception as e:
+    except Exception:
         with open('output/failed_files.txt', 'a') as failed_file:
             #  Save the name of the failed file to a text file
             failed_file.write(f'{args.input_folder}/{file} --- {args.opt}\n')

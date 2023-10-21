@@ -58,22 +58,24 @@ def join_allresults(folder, technique):
 # %% deep learning
 deeplearnBO_folder = '../output/modelingBO/deep_learning/'
 deeplearnCVBO, deeplearn_testBO = join_allresults(deeplearnBO_folder, 'deep_learning')
-
+# remove columns in CV related to the model params and fit time
+deeplearnCVBO = deeplearnCVBO.loc[:,'split0_test_score':]
 # %%
 deeplearnHB_folder = '../output/modelingHB/deep_learning/'
 deeplearnCVHB, deeplearn_testHB = join_allresults(deeplearnHB_folder, 'deep_learning')
-
+deeplearnCVHB = deeplearnCVHB.loc[:,'split0_test_score':]
 # %%
 deeplearnSH_folder = '../output/modelingSH/deep_learning/'
 deeplearnCVSH, deeplearn_testSH = join_allresults(deeplearnSH_folder, 'deep_learning')
+deeplearnCVSH = deeplearnCVSH.loc[:,'split0_test_score':]
 # %%
 deeplearnGS_folder = '../output/modelingGS/deep_learning/'
 deeplearnCVGS, deeplearn_testGS = join_allresults(deeplearnGS_folder, 'deep_learning')
+deeplearnCVGS = deeplearnCVGS.loc[:,'split0_test_score':]
 # %%
 deeplearnRS_folder = '../output/modelingRS/deep_learning/'
 deeplearnCVRS, deeplearn_testRS = join_allresults(deeplearnRS_folder, 'deep_learning')
-
-
+deeplearnCVRS = deeplearnCVRS.loc[:,'split0_test_score':]
 # %% concat all techniques
 results_cv = pd.concat([deeplearnCVBO, deeplearnCVHB, deeplearnCVSH, deeplearnCVGS, deeplearnCVRS]).reset_index(drop=True)
 results_test = pd.concat([deeplearn_testBO, deeplearn_testHB, deeplearn_testSH, deeplearn_testGS, deeplearn_testRS]).reset_index(drop=True)
@@ -82,9 +84,10 @@ results_test = pd.concat([deeplearn_testBO, deeplearn_testHB, deeplearn_testSH, 
 results_cv.loc[results_cv['technique']=='copulaGAN', 'technique'] = 'Copula GAN'
 results_test.loc[results_test['technique']=='copulaGAN', 'technique'] = 'Copula GAN'
 
-# %% remove ds38 because it failed for the majority of opt type
-results_cv = results_cv.loc[results_cv.ds != 'ds38']
-results_test = results_test.loc[results_test.ds != 'ds38']
+# %% remove some datasets because it failed for certain opt types
+remove_ds = ['ds38', 'ds43']
+results_cv = results_cv[~results_cv['ds'].isin(remove_ds)]
+results_test = results_test[~results_test['ds'].isin(remove_ds)]
 # %%
 # results_cv.to_csv('../output/resultsCV.csv', index=False)
 # results_test.to_csv('../output/results_test.csv', index=False)

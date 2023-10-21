@@ -49,7 +49,7 @@ def modeling_ppt(file, args):
   
     print(f'{args.input_folder}/{file}')
 
-    test_folder = 'PPT_transformed/PPT_test'
+    test_folder = 'data/PPT_transformed/PPT_test'
     _, _, test_files = next(os.walk(f'{test_folder}'))
     ff = file.split('.')[0]
     f1 = ff.split('_')[0]
@@ -72,17 +72,26 @@ def modeling_ppt(file, args):
     y_test = test_data.iloc[:, -1]
 
     # predictive performance
-    if args.opt == 'BO':
-        results = evaluate_model_bo(x_train, x_test, y_train, y_test)
-    elif args.opt == 'HB':
-        results = evaluate_model_hb(x_train, x_test, y_train, y_test)
-    else: 
-        results = evaluate_model_sh(x_train, x_test, y_train, y_test)
-    # save validation and test results
-    save_results(file, args, results)
+    try:
+        if args.opt == 'BO':
+            results = evaluate_model_bo(x_train, x_test, y_train, y_test)
+        elif args.opt == 'HB':
+            results = evaluate_model_hb(x_train, x_test, y_train, y_test)
+        elif args.opt == 'SH': 
+            results = evaluate_model_sh(x_train, x_test, y_train, y_test)
+        elif args.opt == 'GS': 
+            results = evaluate_model_gs(x_train, x_test, y_train, y_test)
+        else:
+            results = evaluate_model_rs(x_train, x_test, y_train, y_test)
+        save_results(file, args, results)
+    
+    except Exception:
+        with open('output/failed_files.txt', 'a') as failed_file:
+            #  Save the name of the failed file to a text file
+            failed_file.write(f'{args.input_folder}/{file} --- {args.opt}\n')
 
 # %%
-def modeling_privatesmote_and_gans(file, args):
+def modeling_synthdata(file, args):
     """Apply predictive performance.
 
     Args:

@@ -14,11 +14,11 @@ def join_allresults(folder, technique):
     concat_results_cv = []
     concat_results_test = []
     c=0
-    _,_,result_files = next(walk(f'{folder}/test/'))
+    _,_,result_files = next(walk(f'{folder}/{technique}/test/'))
 
     for file in result_files:
-        result_cv_train = pd.read_csv(f'{folder}/validation/{file}')
-        result_test = pd.read_csv(f'{folder}/test/{file}')
+        result_cv_train = pd.read_csv(f'{folder}/{technique}/validation/{file}')
+        result_test = pd.read_csv(f'{folder}/{technique}/test/{file}')
 
         # guaranteeing that we have the best model in the grid search instead of 3 models
         best_cv = result_cv_train.loc[result_cv_train['rank_test_score'] == 1,:].reset_index(drop=True)
@@ -56,32 +56,39 @@ def join_allresults(folder, technique):
     return concat_results_cv, concat_results_test    
 
 # %% deep learning
-deeplearnBO_folder = '../output/modelingBO/deep_learning/'
-deeplearnCVBO, deeplearn_testBO = join_allresults(deeplearnBO_folder, 'deep_learning')
-# remove columns in CV related to the model params and fit time
-deeplearnCVBO = deeplearnCVBO.loc[:,'split0_test_score':]
-# %%
-deeplearnHB_folder = '../output/modelingHB/deep_learning/'
-deeplearnCVHB, deeplearn_testHB = join_allresults(deeplearnHB_folder, 'deep_learning')
-deeplearnCVHB = deeplearnCVHB.loc[:,'split0_test_score':]
-# %%
-deeplearnSH_folder = '../output/modelingSH/deep_learning/'
-deeplearnCVSH, deeplearn_testSH = join_allresults(deeplearnSH_folder, 'deep_learning')
-deeplearnCVSH = deeplearnCVSH.loc[:,'split0_test_score':]
-# %%
-deeplearnGS_folder = '../output/modelingGS/deep_learning/'
-deeplearnCVGS, deeplearn_testGS = join_allresults(deeplearnGS_folder, 'deep_learning')
-deeplearnCVGS = deeplearnCVGS.loc[:,'split0_test_score':]
-# %%
-deeplearnRS_folder = '../output/modelingRS/deep_learning/'
-deeplearnCVRS, deeplearn_testRS = join_allresults(deeplearnRS_folder, 'deep_learning')
-deeplearnCVRS = deeplearnCVRS.loc[:,'split0_test_score':]
+BO_folder = '../output/modelingBO/'
+deeplearnCVBO, deeplearn_testBO = join_allresults(BO_folder, 'deep_learning')
+pptCVBO, ppt_testBO = join_allresults(BO_folder, 'PPT_ARX')
+
+HB_folder = '../output/modelingHB/'
+deeplearnCVHB, deeplearn_testHB = join_allresults(HB_folder, 'deep_learning')
+# pptCVHB, ppt_testHB = join_allresults(HB_folder, 'PPT_ARX')
+
+SH_folder = '../output/modelingSH/'
+deeplearnCVSH, deeplearn_testSH = join_allresults(SH_folder, 'deep_learning')
+pptCVSH, ppt_testSH = join_allresults(SH_folder, 'PPT_ARX')
+
+GS_folder = '../output/modelingGS/'
+deeplearnCVGS, deeplearn_testGS = join_allresults(GS_folder, 'deep_learning')
+pptCVGS, ppt_testGS = join_allresults(GS_folder, 'PPT_ARX')
+
+RS_folder = '../output/modelingRS/'
+deeplearnCVRS, deeplearn_testRS = join_allresults(RS_folder, 'deep_learning')
+pptCVRS, ppt_testRS = join_allresults(RS_folder, 'PPT_ARX')
+
 # %% concat all techniques
-results_cv = pd.concat([deeplearnCVBO, deeplearnCVHB, deeplearnCVSH, deeplearnCVGS, deeplearnCVRS]).reset_index(drop=True)
-results_test = pd.concat([deeplearn_testBO, deeplearn_testHB, deeplearn_testSH, deeplearn_testGS, deeplearn_testRS]).reset_index(drop=True)
+results_cv = pd.concat([deeplearnCVBO, deeplearnCVHB, deeplearnCVSH, deeplearnCVGS, deeplearnCVRS,
+                        pptCVBO, #pptCVHB,
+                        pptCVSH, pptCVGS, pptCVRS]).reset_index(drop=True)
+
+results_test = pd.concat([deeplearn_testBO, deeplearn_testHB, deeplearn_testSH, deeplearn_testGS, deeplearn_testRS,
+                          ppt_testBO, #ppt_testHB,
+                          ppt_testSH, ppt_testGS, ppt_testRS]).reset_index(drop=True)
 
 # %%
+results_cv.loc[results_cv['technique']=='PPT_ARX', 'technique'] = 'PPT'
 results_cv.loc[results_cv['technique']=='copulaGAN', 'technique'] = 'Copula GAN'
+results_test.loc[results_test['technique']=='PPT_ARX', 'technique'] = 'PPT'
 results_test.loc[results_test['technique']=='copulaGAN', 'technique'] = 'Copula GAN'
 
 # %% remove some datasets because it failed for certain opt types
@@ -95,7 +102,7 @@ results_test = results_test[~results_test['ds'].isin(remove_ds)]
 # results_cv = pd.read_csv('../output/resultsCV.csv')
 
 # %%
-order_technique = ['Copula GAN', 'TVAE', 'CTGAN']
+order_technique = ['PPT', 'Copula GAN', 'TVAE', 'CTGAN']
 order_optype = ['GridSearch', 'RandomSearch', 'Bayes', 'Halving', 'Hyperband']
 # %%
 sns.set_style("darkgrid")

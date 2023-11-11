@@ -76,21 +76,26 @@ def synt_dpart(original_folder, file, technique):
         
 
         for ep in epsilon:
-            if technique == 'independent':
-                dpart_dpsp = Independent(epsilon=ep, bounds=X_bounds)
-            else:
-                dpart_dpsp = DPsynthpop(epsilon=ep, bounds=X_bounds)
-            dpart_dpsp.fit(unprotected_data)
+            try:
+                if technique == 'independent':
+                    dpart_dpsp = Independent(epsilon=ep, bounds=X_bounds)
+                else:
+                    dpart_dpsp = DPsynthpop(epsilon=ep, bounds=X_bounds)
+                dpart_dpsp.fit(unprotected_data)
 
-            synth_df = dpart_dpsp.sample(len(unprotected_data))
+                synth_df = dpart_dpsp.sample(len(unprotected_data))
+                
+                new_data = pd.concat([synth_df, protected_data])
+                print(new_data.shape)    
+                # save synthetic data
+                new_data.to_csv(
+                    f'{output_interpolation_folder}{sep}ds{file.split(".csv")[0]}_{technique}_QI{i}_ep{ep}.csv',
+                    index=False)
             
-            new_data = pd.concat([synth_df, protected_data])
-            print(new_data.shape)    
-            # save synthetic data
-            new_data.to_csv(
-                f'{output_interpolation_folder}{sep}ds{file.split(".csv")[0]}_{technique}_QI{i}_ep{ep}.csv',
-                index=False)
-        print(data.shape)
+            except Exception:
+                with open('../../output/failed_file_synth.txt', 'a') as failed_file:
+                    #  Save the name of the failed file to a text file
+                    failed_file.write(f'{file} --- QI{i} --- tech: {technique}\n')
 
 
 # %%
@@ -102,11 +107,6 @@ for idx,file in enumerate(input_files):
     if int(file.split(".csv")[0]) not in not_considered_files:
         print(idx)
         print(file)
-        try:
-            synt_dpart(original_folder, file, technique)
-        except Exception:
-            with open('../../output/failed_file_synth.txt', 'a') as failed_file:
-                #  Save the name of the failed file to a text file
-                failed_file.write(f'{file} --- tech: {technique}\n')
-
+        synt_dpart(original_folder, file, technique)
+        
 # %%

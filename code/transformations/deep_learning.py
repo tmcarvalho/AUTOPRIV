@@ -62,7 +62,6 @@ def synth(msg):
     print(technique)
     ep = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
     bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
-    ed = list(map(int, re.findall(r'\d+', msg.split('_')[5])))[0]
     
     if technique=='CTGAN':
         # check nr of singleouts
@@ -75,13 +74,12 @@ def synth(msg):
 
     print("epochs: ", ep)
     print("batch_size: ", bs)
-    print("embedding: ", ed)
     if technique=='CTGAN':
-        model = CTGANSynthesizer(metadata, epochs=ep, batch_size=bs, embedding_dim=ed)
+        model = CTGANSynthesizer(metadata, epochs=ep, batch_size=bs)
     elif technique=='TVAE':
-        model = TVAESynthesizer(metadata, epochs=ep, batch_size=bs, embedding_dim=ed)
+        model = TVAESynthesizer(metadata, epochs=ep, batch_size=bs)
     else:
-        model = CopulaGANSynthesizer(metadata, epochs=ep, batch_size=bs, embedding_dim=ed)
+        model = CopulaGANSynthesizer(metadata, epochs=ep, batch_size=bs)
 
     # Fit the model to the data
     model.fit(unprotected_data)

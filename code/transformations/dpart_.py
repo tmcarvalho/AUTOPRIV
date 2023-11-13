@@ -72,7 +72,7 @@ def synt_dpart(original_folder, file, technique):
                                 'max': unprotected_data[col].max()}
             X_bounds.update({col: col_stats_dict})
 
-        epsilon = [0.001, 0.01, 0.1, 0.2, 0.5, 1.0, 5.0, 10.0]
+        epsilon = [0.01, 0.1, 0.2, 0.5, 1.0]
         
 
         for ep in epsilon:

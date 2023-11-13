@@ -40,34 +40,30 @@ dl_queue = channel.queue_declare(queue='dl')
 channel.queue_bind(exchange='dlx', routing_key='task_queue_transf_city', queue=dl_queue.method.queue)
 
 epochs=[100, 200]
-batch_size=[50, 100]
-embedding_dim=[32, 64]
+batch_size=[100, 200]
 
 files = files = next(os.walk(args.input_folder))[2]
 # SDV
 # for file in files:
 #     f = int(file.split('.')[0])
-#     if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87]:
+#     if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87, 2,4,5,8,10,14,16,38,100,24]:
 #         print(file)
 #         for technique in ['CTGAN', 'CopulaGAN', 'TVAE']:
 #             for idx in range(5):
 #                 for ep in epochs:
 #                     for bs in batch_size:
-#                         for ed in embedding_dim:
-#                             # for ep in epislon:
-#                             # files.append(f'{file.split(".")[0]}_privateSMOTE_QI{idx}_knn{k}_per{p}')
-#                             print(f'ds{file.split(".")[0]}_{technique}_QI{idx}_ep{ep}_bs{bs}_ed{ed}')
-#                             put_file_queue(channel, f'ds{file.split(".")[0]}_{technique}_QI{idx}_ep{ep}_bs{bs}_ed{ed}')
+#                             print(f'ds{file.split(".")[0]}_{technique}_QI{idx}_ep{ep}_bs{bs}')
+#                             put_file_queue(channel, f'ds{file.split(".")[0]}_{technique}_QI{idx}_ep{ep}_bs{bs}')
 
 # SYNTHCITY
 n_iter=[100, 200]
-batch_size_=[50, 100]
-epsilon=[0.01, 0.1, 0.2, 0.5, 1.0]
+batch_size_=[100, 200]
+epsilon=[0.01, 0.1, 0.5, 1.0]
 learning_iter=[100, 250, 500, 750, 1000, 1500, 2000]
 
 for file in files:
     f = int(file.split('.')[0])
-    if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87]:
+    if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87, 2,4,5,8,10,14,16,38,100,24]:
         print(file)
         for technique in ['dpgan', 'pategan']:
             for idx in range(5):

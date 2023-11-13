@@ -39,6 +39,7 @@ def join_allresults(folder, technique):
             result_test.loc[:, 'technique'] = technique
 
         # get dataset number
+        best_cv['fit_time_sum'] = result_cv_train.mean_fit_time.sum() / 60
         best_cv['ds'] = file.split('_')[0]
         best_cv['ds_complete'] = file
         result_test['ds'] = file.split('_')[0]
@@ -102,28 +103,46 @@ results_test = results_test[~results_test['ds'].isin(remove_ds)]
 # results_cv = pd.read_csv('../output/resultsCV.csv')
 
 # %%
+PROPS = {
+    'boxprops':{'facecolor':'#00BFC4', 'edgecolor':'black'},
+    'medianprops':{'color':'black'},
+    'whiskerprops':{'color':'black'},
+    'capprops':{'color':'black'}
+}
 order_technique = ['PPT', 'Copula GAN', 'TVAE', 'CTGAN']
 order_optype = ['GridSearch', 'RandomSearch', 'Bayes', 'Halving', 'Hyperband']
-# %%
+# %% ROC AUC in Cross Validation
 sns.set_style("darkgrid")
 plt.figure(figsize=(15,8))
-ax = sns.boxplot(data=results_cv, x='technique', y='mean_test_score', hue='opt_type', 
-                 order=order_technique, hue_order=order_optype, palette="Set3")
+ax = sns.boxplot(data=results_cv, x='technique', y='mean_test_score', hue='opt_type',
+                 order=order_technique, hue_order=order_optype, palette="Spectral_r")
 sns.set(font_scale=1.5)
 plt.xticks(rotation=45)
 plt.xlabel("")
-plt.ylabel("ROC AUC")
-# sns.color_palette("Paired")
+plt.ylabel("Predictive Performance (AUC) in CV")
 sns.move_legend(ax, bbox_to_anchor=(0.5,1.15), loc='upper center', title='Optimization', borderaxespad=0., ncol=5, frameon=False)
 plt.show()
 # figure = ax.get_figure()
 # figure.savefig(f'{os.path.dirname(os.getcwd())}/output/plots/performanceCV_optype.pdf', bbox_inches='tight')
 
-# %%
+# %% fit time in CV
+sns.set_style("darkgrid")
+plt.figure(figsize=(15,8))
+ax = sns.boxplot(data=results_cv, x='opt_type', y='fit_time_sum',
+                 order=order_optype, **PROPS)
+sns.set(font_scale=1.5)
+plt.xticks(rotation=45)
+plt.xlabel("")
+plt.ylabel("Time (min)")
+plt.show()
+# figure = ax.get_figure()
+# figure.savefig(f'{os.path.dirname(os.getcwd())}/output/plots/fittimeCV_optype.pdf', bbox_inches='tight')
+
+# %% time during all process in CV
 sns.set_style("darkgrid")
 plt.figure(figsize=(15,8))
 ax = sns.boxplot(data=results_cv, x='opt_type', y='time',
-                 order=order_optype, palette="Set3")
+                 order=order_optype, **PROPS)
 sns.set(font_scale=1.5)
 plt.xticks(rotation=45)
 plt.xlabel("")
@@ -132,15 +151,15 @@ plt.show()
 # figure = ax.get_figure()
 # figure.savefig(f'{os.path.dirname(os.getcwd())}/output/plots/timeCV_optype.pdf', bbox_inches='tight')
 
-# %%
+# %% ROC AUC in out of sample
 sns.set_style("darkgrid")
 plt.figure(figsize=(15,8))
-ax = sns.boxplot(data=results_test, x='technique', y='test_roc_auc', hue='opt_type', 
+ax = sns.boxplot(data=results_test, x='technique', y='test_roc_auc', hue='opt_type',
                  order=order_technique, hue_order=order_optype, palette="Set3")
 sns.set(font_scale=1.5)
 plt.xticks(rotation=45)
 plt.xlabel("")
-plt.ylabel("ROC AUC")
+plt.ylabel("Predictive performance (AUC) \n in out of sample")
 # sns.color_palette("Paired")
 sns.move_legend(ax, bbox_to_anchor=(0.5,1.15), loc='upper center', title='Optimization', borderaxespad=0., ncol=5, frameon=False)
 plt.show()

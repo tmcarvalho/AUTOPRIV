@@ -77,24 +77,27 @@ def synth_city(msg):
         epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
         bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
         epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[5])))[0]
-        print(epo)
-        print(bs)
-        print(epi)
-        model = Plugins().get("dpgan", n_iter=epo, batch_size=bs, epsilon=epi)
+        if epi != 0.2:
+            print(epo)
+            print(bs)
+            print(epi)
+            model = Plugins().get("dpgan", n_iter=epo, batch_size=bs, epsilon=epi)
 
     elif technique == 'pategan':
         epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
         bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
         epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[5])))[0]
-        print(epo)
-        print(bs)
-        print(epi)
-        model = Plugins().get("pategan", n_iter=epo, batch_size=bs, epsilon=epi)
+        if epi != 0.2:
+            print(epo)
+            print(bs)
+            print(epi)
+            model = Plugins().get("pategan", n_iter=epo, batch_size=bs, epsilon=epi)
 
     elif technique=='privbayes':
         epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[3])))[0]
-        print(epi)
-        model = Plugins().get("privbayes", epsilon=epi)
+        if epi != 0.2:
+            print(epi)
+            model = Plugins().get("privbayes", epsilon=epi)
     
     elif technique == 'tvae':
         epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
@@ -115,16 +118,19 @@ def synth_city(msg):
         print(li)
         model = Plugins().get("bayesian_network", struct_learning_n_iter=li)
 
-    # Fit the model to the data
-    model.fit(unprotected_data)
-    # Generate synthetic data
-    new_data = model.generate(count=len(unprotected_data))
-    new_data = new_data.dataframe()
+    try:
+        # Fit the model to the data
+        model.fit(unprotected_data)
+        # Generate synthetic data
+        new_data = model.generate(count=len(unprotected_data))
+        new_data = new_data.dataframe()
 
-    new_data_ = pd.concat([new_data, protected_data])
+        new_data_ = pd.concat([new_data, protected_data])
 
-    # Save the synthetic data
-    new_data_.to_csv(
-        f'{output_interpolation_folder}{sep}{msg}.csv',
-        index=False)
+        # Save the synthetic data
+        new_data_.to_csv(
+            f'{output_interpolation_folder}{sep}{msg}.csv',
+            index=False)
+    except Exception:
+        pass
 

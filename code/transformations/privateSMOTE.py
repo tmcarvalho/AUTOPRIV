@@ -218,7 +218,7 @@ def PrivateSMOTE_force_laplace_(msg):
 original_folder = '../../data/original'
 _, _, input_files = next(walk(f'{original_folder}'))
 
-not_considered_files = [0,1,3,13,23,28,34,36,40,48,54,66,87]
+not_considered_files = [0,1,3,13,23,28,34,36,40,48,54,66,87, 100,43]
 
 knn = [1,3,5]
 per = [1,2,3]

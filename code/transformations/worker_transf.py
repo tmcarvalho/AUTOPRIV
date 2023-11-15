@@ -9,13 +9,13 @@ import threading
 import argparse
 import gc
 import pika
-# from deep_learning import synth
+from deep_learning import synth
 from city import synth_city
 
 #%%
 parser = argparse.ArgumentParser(description='Master Example')
-# parser.add_argument('--input_folder', type=str, help='Input folder', default="./input")
 parser.add_argument('--type', type=str, help='PrivateSMOTE type', default="none")
+parser.add_argument('--id', type=str, help='GPU device id', default="none")
 args = parser.parse_args()
 
 def ack_message(ch, delivery_tag, work_sucess):
@@ -43,9 +43,9 @@ def ack_message(ch, delivery_tag, work_sucess):
 def do_work(conn, ch, delivery_tag, body):
     msg = body.decode('utf-8')
     if args.type == 'deep_learning':
-        work_sucess = synth(msg)
+        work_sucess = synth(msg, args)
     else:
-        work_sucess = synth_city(msg)
+        work_sucess = synth_city(msg, args)
     gc.collect()
     os.system('find . -name "__pycache__" -type d -exec rm -rf "{}" +')
     os.system('find . -name "*.pyc"| xargs rm -f "{}"')
@@ -65,14 +65,14 @@ def on_message(ch, method_frame, _header_frame, body, args):
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', heartbeat=0
 ))
 channel = connection.channel()
-channel.queue_declare(queue='task_queue_transf_city', durable=True, arguments={"dead-letter-exchange":"dlx"})
+channel.queue_declare(queue='task_queue_transf', durable=True, arguments={"dead-letter-exchange":"dlx"})
 print(' [*] Waiting for messages. To exit press CTRL+C')
 
 channel.basic_qos(prefetch_count=1)
 
 threads = []
 on_message_callback = functools.partial(on_message, args=(connection, threads))
-channel.basic_consume('task_queue_transf_city', on_message_callback)
+channel.basic_consume('task_queue_transf', on_message_callback)
 
 try:
     channel.start_consuming()
@@ -88,5 +88,5 @@ connection.close()
 
 # find . -name ".DS_Store" -delete
 # python3 code/transformations/task_transf.py  --input_folder "data/original" 
-# python3 code/transformations/worker_transf.py --type "deep_learning"
-# python3 code/transformations/worker_transf.py --type "synthcity"
+# python3 code/transformations/worker_transf.py --type "deep_learning" --id "0"
+# python3 code/transformations/worker_transf.py --type "synthcity" --id "0"

@@ -72,7 +72,7 @@ def synt_dpart(original_folder, file, technique):
                                 'max': unprotected_data[col].max()}
             X_bounds.update({col: col_stats_dict})
 
-        epsilon = [0.01, 0.1, 0.2, 0.5, 1.0]
+        epsilon = [0.1, 0.25, 0.5, 0.75, 1.0]
         
 
         for ep in epsilon:
@@ -102,7 +102,7 @@ def synt_dpart(original_folder, file, technique):
 original_folder = '../../data/original'
 _, _, input_files = next(walk(f'{original_folder}'))
 technique = 'synthpop'
-not_considered_files = [0,1,3,13,23,28,34,36,40,48,54,66,87]
+not_considered_files = [0,1,3,13,23,28,34,36,40,48,54,66,87, 100,43]
 for idx,file in enumerate(input_files):
     if int(file.split(".csv")[0]) not in not_considered_files:
         print(idx)

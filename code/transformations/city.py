@@ -43,7 +43,6 @@ def synth_city(msg, args):
     output_interpolation_folder = 'data/synthcityk2/'
 
     f = list(map(int, re.findall(r'\d+', msg.split('_')[0])))
-    print(str(f[0]))
     data = pd.read_csv(f'data/original/{str(f[0])}.csv')
 
     # get 80% of data to synthesise
@@ -62,11 +61,9 @@ def synth_city(msg, args):
         list_key_vars.loc[list_key_vars['ds']==f[0], 'set_key_vars'].values[0])
 
     technique = msg.split('_')[1]
-    print(technique)
     
     if (technique in ['dpgan', 'pategan']):
         keys_nr = list(map(int, re.findall(r'\d+', msg.split('_')[2])))[0]
-        print(keys_nr)
         keys = set_key_vars[keys_nr]
 
         data = aux_singleouts(keys, data)
@@ -74,65 +71,47 @@ def synth_city(msg, args):
         unprotected_data = data.loc[data['single_out'] == 1].reset_index(drop=True)
         del protected_data['single_out']
         del unprotected_data['single_out']
-        print(protected_data.shape)
-        print(unprotected_data.shape)
+
+        if technique == 'dpgan':
+            epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
+            bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
+            epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[5])))[0]
+            model = Plugins().get("dpgan", n_iter=epo, batch_size=bs, epsilon=epi)
+
+        elif technique == 'pategan':
+            epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
+            bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
+            epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[5])))[0]
+            model = Plugins().get("pategan", n_iter=epo, batch_size=bs, epsilon=epi)
+
+        elif technique=='privbayes':
+            epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[3])))[0]
+            model = Plugins().get("privbayes", epsilon=epi)
         
-        if (keys_nr <3):
-            if technique == 'dpgan':
-                epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
-                bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
-                epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[5])))[0]
-                if epi not in [0.2, 0.01]:
-                    print(epo)
-                    print(bs)
-                    print(epi)
-                    model = Plugins().get("dpgan", n_iter=epo, batch_size=bs, epsilon=epi)
+        elif technique == 'tvae':
+            epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
+            bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
+            model = Plugins().get("tvae", n_iter=epo, batch_size=bs)
+        
+        elif technique == 'ctgan':
+            epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
+            bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
+            model = Plugins().get("ctgan", n_iter=epo, batch_size=bs)
+        
+        else:
+            li = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
+            model = Plugins().get("bayesian_network", struct_learning_n_iter=li)
 
-            elif technique == 'pategan':
-                epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
-                bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
-                epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[5])))[0]
-                if epi not in [0.2, 0.001]:
-                    print(epo)
-                    print(bs)
-                    print(epi)
-                    model = Plugins().get("pategan", n_iter=epo, batch_size=bs, epsilon=epi)
+        try:
+            new_data = modeling(model, unprotected_data)
+            new_data_ = pd.concat([new_data, protected_data])
 
-            elif technique=='privbayes':
-                epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[3])))[0]
-                if epi not in [0.2, 0.001]:
-                    print(epi)
-                    model = Plugins().get("privbayes", epsilon=epi)
-            
-            elif technique == 'tvae':
-                epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
-                bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
-                print(epo)
-                print(bs)
-                model = Plugins().get("tvae", n_iter=epo, batch_size=bs)
-            
-            elif technique == 'ctgan':
-                epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
-                bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
-                print(epo)
-                print(bs)
-                model = Plugins().get("ctgan", n_iter=epo, batch_size=bs)
-            
-            else:
-                li = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
-                print(li)
-                model = Plugins().get("bayesian_network", struct_learning_n_iter=li)
-
-            try:
-                new_data = modeling(model, unprotected_data)
-                new_data_ = pd.concat([new_data, protected_data])
-
-                # Save the synthetic data
-                new_data_.to_csv(
-                    f'{output_interpolation_folder}{sep}{msg}.csv',
-                    index=False)
-            except Exception:
-                pass
+            # Save the synthetic data
+            new_data_.to_csv(
+                f'{output_interpolation_folder}{sep}{msg}.csv',
+                index=False)
+        except Exception:
+            pass
 
 # function optimized to run on gpu 
 @jit(target_backend='cuda')

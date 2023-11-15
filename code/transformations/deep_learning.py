@@ -28,7 +28,7 @@ def synth(msg, args):
     cuda.select_device(int(args.id))
     print(msg)
     output_interpolation_folder = 'data/deep_learningk2/'
-    if msg.split('_')[0] not in ['ds100']:
+    if msg.split('_')[0] not in ['ds100', 'ds43']:
         f = list(map(int, re.findall(r'\d+', msg.split('_')[0])))
         print(str(f[0]))
         data = pd.read_csv(f'data/original/{str(f[0])}.csv')

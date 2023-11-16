@@ -10,6 +10,8 @@ numpy = "*"
 pika = "*"
 dpart = "*"
 numba = "*"
+xgboost = "*"
+scikit-optimize = "*"
 
 [dev-packages]
 ipykernel = "*"

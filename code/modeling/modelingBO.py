@@ -19,7 +19,7 @@ warnings.filterwarnings(action='ignore', category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 
 # evaluate a model
-def evaluate_model_bo(x_train, x_test, y_train, y_test):
+def evaluate_model_bo(x_train, x_test, y_train, y_test, args):
     """Evaluatation
 
     Args:
@@ -39,6 +39,8 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
     xgb = XGBClassifier(
             objective='binary:logistic',
             use_label_encoder=False,
+            tree_method = "hist",
+            device = f'cuda:{args.id}',
             random_state=seed)
 
     grb = GradientBoostingClassifier(loss='log_loss',
@@ -95,7 +97,6 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
     print("Start modeling with CV")
     training = time.time()
 
-    # Train the grid search model
     grid = BayesSearchCV(
         pipeline,
         search_spaces=params,

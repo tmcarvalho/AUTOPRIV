@@ -74,15 +74,15 @@ def modeling_ppt(file, args):
     # predictive performance
     try:
         if args.opt == 'BO':
-            results = evaluate_model_bo(x_train, x_test, y_train, y_test)
+            results = evaluate_model_bo(x_train, x_test, y_train, y_test, args)
         elif args.opt == 'HB':
-            results = evaluate_model_hb(x_train, x_test, y_train, y_test)
+            results = evaluate_model_hb(x_train, x_test, y_train, y_test, args)
         elif args.opt == 'SH': 
-            results = evaluate_model_sh(x_train, x_test, y_train, y_test)
+            results = evaluate_model_sh(x_train, x_test, y_train, y_test, args)
         elif args.opt == 'GS': 
-            results = evaluate_model_gs(x_train, x_test, y_train, y_test)
+            results = evaluate_model_gs(x_train, x_test, y_train, y_test, args)
         else:
-            results = evaluate_model_rs(x_train, x_test, y_train, y_test)
+            results = evaluate_model_rs(x_train, x_test, y_train, y_test, args)
         save_results(file, args, results)
     
     except Exception:
@@ -125,15 +125,15 @@ def modeling_synthdata(file, args):
 
     try:
         if args.opt == 'BO':
-            results = evaluate_model_bo(x_train, x_test, y_train, y_test)
+            results = evaluate_model_bo(x_train, x_test, y_train, y_test, args)
         elif args.opt == 'HB':
-            results = evaluate_model_hb(x_train, x_test, y_train, y_test)
+            results = evaluate_model_hb(x_train, x_test, y_train, y_test, args)
         elif args.opt == 'SH': 
-            results = evaluate_model_sh(x_train, x_test, y_train, y_test)
+            results = evaluate_model_sh(x_train, x_test, y_train, y_test, args)
         elif args.opt == 'GS': 
-            results = evaluate_model_gs(x_train, x_test, y_train, y_test)
+            results = evaluate_model_gs(x_train, x_test, y_train, y_test, args)
         else:
-            results = evaluate_model_rs(x_train, x_test, y_train, y_test)
+            results = evaluate_model_rs(x_train, x_test, y_train, y_test, args)
         save_results(file, args, results)
     
     except Exception:

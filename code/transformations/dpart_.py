@@ -5,7 +5,6 @@ import ast
 import pandas as pd
 import numpy as np
 from dpart.engines import DPsynthpop, Independent
-
 # %%
 
 def keep_numbers(data):
@@ -25,6 +24,7 @@ def aux_singleouts(key_vars, dt):
     k = dt.groupby(key_vars)[key_vars[0]].transform(len)
     dt['single_out'] = np.where(k < 2 , 1, 0)
     return dt
+
 
 def synt_dpart(original_folder, file, technique):
     output_interpolation_folder = '../../data/dpartk2'
@@ -47,7 +47,9 @@ def synt_dpart(original_folder, file, technique):
     # transform target to string because integer targets are not well synthesised
     data[data.columns[-1]] = data[data.columns[-1]].astype(str)
 
-    for i, keys in enumerate(set_key_vars):
+    # limit to 3 set of QIs
+    for idx in range(3):
+        keys = set_key_vars[idx]
         data = aux_singleouts(keys, data)
         print(data.shape)
         protected_data = data.loc[data['single_out'] == 0].reset_index(drop=True)
@@ -81,32 +83,34 @@ def synt_dpart(original_folder, file, technique):
                     dpart_dpsp = Independent(epsilon=ep, bounds=X_bounds)
                 else:
                     dpart_dpsp = DPsynthpop(epsilon=ep, bounds=X_bounds)
+                
+                # Fit the model to the data
                 dpart_dpsp.fit(unprotected_data)
-
                 synth_df = dpart_dpsp.sample(len(unprotected_data))
                 
                 new_data = pd.concat([synth_df, protected_data])
                 print(new_data.shape)    
                 # save synthetic data
                 new_data.to_csv(
-                    f'{output_interpolation_folder}{sep}ds{file.split(".csv")[0]}_{technique}_QI{i}_ep{ep}.csv',
+                    f'{output_interpolation_folder}{sep}ds{file.split(".csv")[0]}_{technique}_QI{idx}_ep{ep}.csv',
                     index=False)
             
             except Exception:
                 with open('../../output/failed_file_synth.txt', 'a') as failed_file:
                     #  Save the name of the failed file to a text file
-                    failed_file.write(f'{file} --- QI{i} --- tech: {technique}\n')
+                    failed_file.write(f'{file} --- QI{idx} --- tech: {technique}\n')
 
 
 # %%
 original_folder = '../../data/original'
 _, _, input_files = next(walk(f'{original_folder}'))
-technique = 'synthpop'
+
 not_considered_files = [0,1,3,13,23,28,34,36,40,48,54,66,87, 100,43]
 for idx,file in enumerate(input_files):
     if int(file.split(".csv")[0]) not in not_considered_files:
-        print(idx)
-        print(file)
-        synt_dpart(original_folder, file, technique)
-        
+        for technique in ['synthpop', 'independent']:
+            print(idx)
+            print(file)
+            synt_dpart(original_folder, file, technique)
+            
 # %%

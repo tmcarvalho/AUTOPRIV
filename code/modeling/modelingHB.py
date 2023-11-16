@@ -17,7 +17,7 @@ from xgboost import XGBClassifier
 warnings.filterwarnings(action='ignore', category=FutureWarning)
 
 # %% evaluate a model
-def evaluate_model_hb(x_train, x_test, y_train, y_test, args):
+def evaluate_model_hb(x_train, x_test, y_train, y_test):
     """Evaluatation
 
     Args:
@@ -37,12 +37,9 @@ def evaluate_model_hb(x_train, x_test, y_train, y_test, args):
     xgb = XGBClassifier(
             objective='binary:logistic',
             use_label_encoder=False,
-            tree_method = "hist",
-            device = f'cuda:{args.id}',
             random_state=seed)
 
-    grb = GradientBoostingClassifier(loss='log_loss',
-                                    n_iter_no_change=10,
+    grb = GradientBoostingClassifier(n_iter_no_change=10,
                                     random_state=seed)
 
     sdg = SGDClassifier(early_stopping=True,

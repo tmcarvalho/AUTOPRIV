@@ -35,7 +35,6 @@ def aux_singleouts(key_vars, dt):
     dt['single_out'] = np.where(k < 2 , 1, 0)
     return dt
 
-
 class Smote:
     """Apply Smote
     """
@@ -152,6 +151,7 @@ class Smote:
             N-=1
 
 # %% 
+
 def PrivateSMOTE_force_laplace_(msg):
     """Generate several interpolated data sets considering all classes.
 
@@ -190,6 +190,7 @@ def PrivateSMOTE_force_laplace_(msg):
     knn = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
     per = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
     ep = 5
+
     new = Smote(data, per, knn, ep).over_sampling()
     
     newDf = pd.DataFrame(new, columns = data.columns[:-1])
@@ -225,7 +226,7 @@ per = [1,2,3]
 
 for idx,file in enumerate(input_files):
     if int(file.split(".csv")[0]) not in not_considered_files:
-        for idx in range(5):
+        for idx in range(3):
             for k in knn:
                 for p in per:
                     PrivateSMOTE_force_laplace_(f'ds{file.split(".")[0]}_privateSMOTE_QI{idx}_knn{k}_per{p}')

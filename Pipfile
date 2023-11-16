@@ -8,6 +8,8 @@ sdv = "*"
 pandas = "*"
 numpy = "*"
 pika = "*"
+dpart = "*"
+numba = "*"
 
 [dev-packages]
 ipykernel = "*"

@@ -62,56 +62,41 @@ def synth_city(msg, args):
 
     technique = msg.split('_')[1]
     
-    if (technique in ['dpgan', 'pategan']):
-        keys_nr = list(map(int, re.findall(r'\d+', msg.split('_')[2])))[0]
-        keys = set_key_vars[keys_nr]
+    keys_nr = list(map(int, re.findall(r'\d+', msg.split('_')[2])))[0]
+    keys = set_key_vars[keys_nr]
 
-        data = aux_singleouts(keys, data)
-        protected_data = data.loc[data['single_out'] == 0].reset_index(drop=True)
-        unprotected_data = data.loc[data['single_out'] == 1].reset_index(drop=True)
-        del protected_data['single_out']
-        del unprotected_data['single_out']
+    data = aux_singleouts(keys, data)
+    protected_data = data.loc[data['single_out'] == 0].reset_index(drop=True)
+    unprotected_data = data.loc[data['single_out'] == 1].reset_index(drop=True)
+    del protected_data['single_out']
+    del unprotected_data['single_out']
 
-        if technique == 'dpgan':
-            epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
-            bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
-            epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[5])))[0]
-            model = Plugins().get("dpgan", n_iter=epo, batch_size=bs, epsilon=epi)
+    if technique == 'dpgan':
+        epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
+        bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
+        epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[5])))[0]
+        model = Plugins().get("dpgan", n_iter=epo, batch_size=bs, epsilon=epi)
 
-        elif technique == 'pategan':
-            epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
-            bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
-            epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[5])))[0]
-            model = Plugins().get("pategan", n_iter=epo, batch_size=bs, epsilon=epi)
+    elif technique == 'pategan':
+        epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
+        bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
+        epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[5])))[0]
+        model = Plugins().get("pategan", n_iter=epo, batch_size=bs, epsilon=epi)
 
-        elif technique=='privbayes':
-            epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[3])))[0]
-            model = Plugins().get("privbayes", epsilon=epi)
-        
-        elif technique == 'tvae':
-            epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
-            bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
-            model = Plugins().get("tvae", n_iter=epo, batch_size=bs)
-        
-        elif technique == 'ctgan':
-            epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
-            bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
-            model = Plugins().get("ctgan", n_iter=epo, batch_size=bs)
-        
-        else:
-            li = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
-            model = Plugins().get("bayesian_network", struct_learning_n_iter=li)
+    elif technique=='privbayes':
+        epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[3])))[0]
+        model = Plugins().get("privbayes", epsilon=epi)
+    
+    try:
+        new_data = modeling(model, unprotected_data)
+        new_data_ = pd.concat([new_data, protected_data])
 
-        try:
-            new_data = modeling(model, unprotected_data)
-            new_data_ = pd.concat([new_data, protected_data])
-
-            # Save the synthetic data
-            new_data_.to_csv(
-                f'{output_interpolation_folder}{sep}{msg}.csv',
-                index=False)
-        except Exception:
-            pass
+        # Save the synthetic data
+        new_data_.to_csv(
+            f'{output_interpolation_folder}{sep}{msg}.csv',
+            index=False)
+    except Exception:
+        pass
 
 # function optimized to run on gpu 
 @jit(target_backend='cuda')

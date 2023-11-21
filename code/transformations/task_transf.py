@@ -59,36 +59,22 @@ files = files = next(os.walk(args.input_folder))[2]
 n_iter=[100, 200]
 batch_size_=[50, 100]
 epsilon=[0.1, 0.25, 0.5, 0.75, 1.0]
-learning_iter=[100, 250, 500, 750, 1000, 1500, 2000]
 
 for file in files:
     f = int(file.split('.')[0])
     if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87, 100,43]:
         print(file)
-        for technique in ['dpgan', 'pategan']:
-            for idx in range(3):
-                for epo in n_iter:
-                    for bs in batch_size_:
-                        for epi in epsilon:
-                            print(f'ds{file.split(".")[0]}_{technique}_QI{idx}_epo{epo}_bs{bs}_epi{epi}')
-                            put_file_queue(channel, f'ds{file.split(".")[0]}_{technique}_QI{idx}_epo{epo}_bs{bs}_epi{epi}')
+        # for technique in ['dpgan', 'pategan']:
+        #     for idx in range(3):
+        #         for epo in n_iter:
+        #             for bs in batch_size_:
+        #                 for epi in epsilon:
+        #                     print(f'ds{file.split(".")[0]}_{technique}_QI{idx}_epo{epo}_bs{bs}_epi{epi}')
+        #                     put_file_queue(channel, f'ds{file.split(".")[0]}_{technique}_QI{idx}_epo{epo}_bs{bs}_epi{epi}')
 
         for idx in range(3):
             for epi in epsilon:
                 print(f'ds{file.split(".")[0]}_privbayes_QI{idx}_epi{epi}')
                 put_file_queue(channel, f'ds{file.split(".")[0]}_privbayes_QI{idx}_epi{epi}')
-
-        # for technique in ['tvae', 'ctgan']:
-        #     for idx in range(3):
-        #         for epo in n_iter:
-        #             for bs in batch_size_:
-        #                     print(f'ds{file.split(".")[0]}_{technique}_QI{idx}_epo{epo}_bs{bs}')
-        #                     put_file_queue(channel, f'ds{file.split(".")[0]}_{technique}_QI{idx}_epo{epo}_bs{bs}')
-
-        # for idx in range(3):
-        #     for li in learning_iter:
-        #         print(f'ds{file.split(".")[0]}_bayesiannetwork_QI{idx}_li{li}')
-        #         put_file_queue(channel, f'ds{file.split(".")[0]}_bayesian_network_QI{idx}_li{li}')
-
 
 connection.close()

@@ -6,6 +6,8 @@ import argparse
 import os
 import re
 import pika
+import pandas as pd
+import ast
 
 parser = argparse.ArgumentParser(description='Master Example')
 parser.add_argument('--input_folder', type=str, help='Input folder', default="./input")
@@ -42,9 +44,20 @@ channel.queue_bind(exchange='dlx', routing_key='task_queue', queue=dl_queue.meth
 
 for file in os.listdir(args.input_folder):
     f = list(map(int, re.findall(r'\d+', file.split('_')[0])))[0]
-    if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87]:
-    #if f == 2:
-        print(file)
-        put_file_queue(channel, file)
+    if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87, 100,43]:
+        if len(file.split('_')) < 4:
+            list_key_vars = pd.read_csv('list_key_vars.csv')
+            set_key_vars = ast.literal_eval(
+                list_key_vars.loc[list_key_vars['ds']==f[0], 'set_key_vars'].values[0])
+
+            keys_nr = list(map(int, re.findall(r'\d+', file.split('_')[2])))[0]
+
+            if keys_nr < 3:
+                print(file)
+                put_file_queue(channel, file)
+
+        else:
+            print(file)
+            put_file_queue(channel, file)
 
 connection.close()

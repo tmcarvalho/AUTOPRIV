@@ -69,7 +69,7 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
 
     param2 = {}
     param2['classifier__alpha'] = Real(1e-5, 1e-3)
-    param2['classifier__max_iter'] = Integer(1000, 1000000)
+    param2['classifier__max_iter'] = Integer(1000, 100000)
     param2['classifier__eta0'] = Integer(0, 1)
     param2['classifier'] = [sdg]
     
@@ -82,7 +82,7 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
     param4 = {}
     param4['classifier__hidden_layer_sizes'] = Integer(int(n_feat // 2), n_feat)
     param4['classifier__alpha'] = Real(1e-4, 1e-2)
-    param4['classifier__max_iter'] = Integer(1000, 1000000)
+    param4['classifier__max_iter'] = Integer(1000, 100000)
     param4['classifier'] = [nnet]
 
     # define metric functions -- doens't accept multi measures

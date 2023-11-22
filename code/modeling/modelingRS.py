@@ -38,9 +38,7 @@ def evaluate_model_rs(x_train, x_test, y_train, y_test):
             objective='binary:logistic',
             use_label_encoder=False,
             random_state=seed)
-    print(x_train.shape, y_train.shape)
-    print(x_valid.shape, y_valid.shape)
-    print(x_test.shape, y_test.shape)
+
     grb = GradientBoostingClassifier(n_iter_no_change=10,
                                     random_state=seed)
 

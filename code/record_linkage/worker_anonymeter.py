@@ -87,8 +87,9 @@ connection.close()
 
 
 # find . -name ".DS_Store" -delete
-# python3 code/record_linkage/task_anonymeter.py  --input_folder "data/dpart_synthpop"
+# python3 code/record_linkage/task_anonymeter.py  --input_folder "data/deep_learningk2"
+# python3 code/record_linkage/task_anonymeter.py  --input_folder "data/PPT_transformed/PPT_train"
 # python3 code/record_linkage/worker_anonymeter.py --type "PPT" --input_folder "data/PPT_transformed/PPT_train" --output_folder "output/anonymeter/PPT_ARX"
-# python3 code/record_linkage/worker_anonymeter.py --type "gans_dpart" --input_folder "data/dpart_synthpop" --output_folder "output/anonymeter/dpart"
-# python3 code/record_linkage/worker_anonymeter.py --type "gans_dpart" --input_folder "data/deep_learning" --output_folder "output/anonymeter/deep_learning"
-# python3 code/record_linkage/worker_anonymeter.py --type "PrivateSMOTE" --input_folder "data/PrivateSMOTE_force_laplace_k3" --output_folder "output/anonymeter/PrivateSMOTE"
+# python3 code/record_linkage/worker_anonymeter.py --type "city" --input_folder "data/synthcityk2" --output_folder "output/anonymeter/synthcityk2"
+# python3 code/record_linkage/worker_anonymeter.py --type "sdv" --input_folder "data/deep_learningk2" --output_folder "output/anonymeter/deep_learningk2"
+# python3 code/record_linkage/worker_anonymeter.py --type "privsmote" --input_folder "data/PrivateSMOTEk2" --output_folder "output/anonymeter/PrivateSMOTEk2"

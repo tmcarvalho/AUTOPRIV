@@ -43,22 +43,21 @@ dl_queue = channel.queue_declare(queue='dl')
 channel.queue_bind(exchange='dlx', routing_key='task_queue_anon', queue=dl_queue.method.queue)
 
 for file in os.listdir(args.input_folder):
-    if 'list_key_vars' not in file:
-        f = list(map(int, re.findall(r'\d+', file.split('_')[0])))[0]
-        if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87, 100,43]:
-            if len(file.split('_')) < 4:
-                list_key_vars = pd.read_csv('list_key_vars.csv')
-                set_key_vars = ast.literal_eval(
-                    list_key_vars.loc[list_key_vars['ds']==f[0], 'set_key_vars'].values[0])
+    f = list(map(int, re.findall(r'\d+', file.split('_')[0])))[0]
+    if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87, 100,43]:
+        if len(file.split('_')) < 4:
+            list_key_vars = pd.read_csv('list_key_vars.csv')
+            set_key_vars = ast.literal_eval(
+                list_key_vars.loc[list_key_vars['ds']==f[0], 'set_key_vars'].values[0])
 
-                keys_nr = list(map(int, re.findall(r'\d+', file.split('_')[2])))[0]
+            keys_nr = list(map(int, re.findall(r'\d+', file.split('_')[2])))[0]
 
-                if keys_nr < 3:
-                    print(file)
-                    put_file_queue(channel, file)
-
-            else:
+            if keys_nr < 3:
                 print(file)
                 put_file_queue(channel, file)
+
+        else:
+            print(file)
+            put_file_queue(channel, file)
 
 connection.close()

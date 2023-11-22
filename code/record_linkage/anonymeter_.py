@@ -36,18 +36,13 @@ def load_data(file, args, set_key_vars):
         control_data = pd.read_csv(
             f'{orig_folder}/PPT_ARX_test_orig/{orig_file[0]}')
         transf_data = pd.read_csv(f'{args.input_folder}/{file}')
-        try:
-            keys_nr = list(map(int, re.findall(r'\d+', file.split('_')[2])))[0]
-            print(keys_nr)
-            keys = set_key_vars[keys_nr]
-            # transform '*' in np.nan because of data types
-            if transf_data[keys[0]].iloc[-1] == '*':
-                transf_data = transf_data.replace('*', np.nan)
-        except Exception:
-            with open('output/failed_files_anon.txt', 'a', encoding='utf-8') as failed_file:
-                # Save the name of the failed file to a text file
-                failed_file.write(
-                    f'{args.input_folder}/{file} --- {args.type} --- *\n')
+
+        keys_nr = list(map(int, re.findall(r'\d+', file.split('_')[2])))[0]
+        print(keys_nr)
+        keys = set_key_vars[keys_nr]
+        # transform '*' in np.nan because of data types
+        if transf_data[keys[0]].iloc[-1] == '*':
+            transf_data = transf_data.replace('*', np.nan)
 
         transf_data = orig_data.astype(dtype=orig_data.dtypes)
 
@@ -67,48 +62,24 @@ def anonymeter_linkability(file, args):
 
     orig_data, control_data, transf_data = load_data(file, args, set_key_vars)
 
-    if args.type == 'gans_dpart':
-        for i, keys in enumerate(set_key_vars):
-            try:
-                evaluator = LinkabilityEvaluator(ori=orig_data,
-                                                 syn=transf_data,
-                                                 control=control_data,
-                                                 n_attacks=len(control_data),
-                                                 aux_cols=keys,
-                                                 n_neighbors=10)
+    try:
+        keys_nr = list(map(int, re.findall(r'\d+', file.split('_')[2])))[0]
+        print(keys_nr)
+        keys = set_key_vars[keys_nr]
+        evaluator = LinkabilityEvaluator(ori=orig_data,
+                                            syn=transf_data,
+                                            control=control_data,
+                                            n_attacks=len(control_data),
+                                            aux_cols=keys,
+                                            n_neighbors=10)
 
-                evaluator.evaluate(n_jobs=-1)
-                # evaluator.risk()
-                risk = pd.DataFrame(
-                    {'value': evaluator.risk()[0], 'ci': [evaluator.risk()[1]]})
-                risk.to_csv(
-                    f'{args.output_folder}/{file.split(".csv")[0]}_qi{i}.csv',
-                    index=False)
-            except Exception:
-                with open('output/failed_files_anon.txt', 'a', encoding='utf-8') as failed_file:
-                    # Save the name of the failed file to a text file
-                    failed_file.write(
-                        f'{args.input_folder}/{file} --- {args.type}\n')
-
-    else:
-        try:
-            keys_nr = list(map(int, re.findall(r'\d+', file.split('_')[2])))[0]
-            print(keys_nr)
-            keys = set_key_vars[keys_nr]
-            evaluator = LinkabilityEvaluator(ori=orig_data,
-                                             syn=transf_data,
-                                             control=control_data,
-                                             n_attacks=len(control_data),
-                                             aux_cols=keys,
-                                             n_neighbors=10)
-
-            evaluator.evaluate(n_jobs=-1)
-            # evaluator.risk()
-            risk = pd.DataFrame(
-                {'value': evaluator.risk()[0], 'ci': [evaluator.risk()[1]]})
-            risk.to_csv(f'{args.output_folder}/{file}', index=False)
-        except Exception:
-            with open('output/failed_files_anon.txt', 'a', encoding='utf-8') as failed_file:
-                # Save the name of the failed file to a text file
-                failed_file.write(
-                    f'{args.input_folder}/{file} --- {args.type}\n')
+        evaluator.evaluate(n_jobs=-1)
+        # evaluator.risk()
+        risk = pd.DataFrame(
+            {'value': evaluator.risk()[0], 'ci': [evaluator.risk()[1]]})
+        risk.to_csv(f'{args.output_folder}/{file}', index=False)
+    except Exception:
+        with open('output/failed_files_anon.txt', 'a', encoding='utf-8') as failed_file:
+            # Save the name of the failed file to a text file
+            failed_file.write(
+                f'{args.input_folder}/{file} --- {args.type}\n')

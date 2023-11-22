@@ -48,7 +48,7 @@ for file in os.listdir(args.input_folder):
         if len(file.split('_')) < 4:
             list_key_vars = pd.read_csv('list_key_vars.csv')
             set_key_vars = ast.literal_eval(
-                list_key_vars.loc[list_key_vars['ds']==f[0], 'set_key_vars'].values[0])
+                list_key_vars.loc[list_key_vars['ds']==f, 'set_key_vars'].values[0])
 
             keys_nr = list(map(int, re.findall(r'\d+', file.split('_')[2])))[0]
 

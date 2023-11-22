@@ -87,16 +87,18 @@ def synth_city(msg, args):
         epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[3])))[0]
         model = Plugins().get("privbayes", epsilon=epi)
     
-    try:
-        new_data = modeling(model, unprotected_data)
-        new_data_ = pd.concat([new_data, protected_data])
+    # try:
+    new_data = modeling(model, unprotected_data)
+    new_data_ = pd.concat([new_data, protected_data])
 
-        # Save the synthetic data
-        new_data_.to_csv(
-            f'{output_interpolation_folder}{sep}{msg}.csv',
-            index=False)
-    except Exception:
-        pass
+    # Save the synthetic data
+    new_data_.to_csv(
+        f'{output_interpolation_folder}{sep}{msg}.csv',
+        index=False)
+    # except Exception:
+    #     with open('output/failed_file_synth.txt', 'a') as failed_file:
+    #         #  Save the name of the failed file to a text file
+    #         failed_file.write(f'{msg} --- city\n')
 
 # function optimized to run on gpu 
 @jit(target_backend='cuda')

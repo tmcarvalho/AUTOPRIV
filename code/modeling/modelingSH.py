@@ -39,8 +39,7 @@ def evaluate_model_sh(x_train, x_test, y_train, y_test):
             use_label_encoder=False,
             random_state=seed)
     
-    grb = GradientBoostingClassifier(loss='log_loss',
-                                    n_iter_no_change=10,
+    grb = GradientBoostingClassifier(n_iter_no_change=10,
                                     random_state=seed)
     
     sdg = SGDClassifier(early_stopping=True,

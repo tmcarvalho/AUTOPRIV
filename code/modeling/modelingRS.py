@@ -32,7 +32,7 @@ def evaluate_model_rs(x_train, x_test, y_train, y_test):
     seed = np.random.seed(1234)
 
     # initiate models
-    _, x_valid, _, y_valid = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
+    _, x_valid, _, y_valid = train_test_split(x_train, y_train, test_size=0.2, random_state=1)
     # initiate models
     xgb = XGBClassifier(
             objective='binary:logistic',

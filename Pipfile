@@ -12,6 +12,8 @@ dpart = "*"
 numba = "*"
 xgboost = "*"
 scikit-optimize = "*"
+seaborn = "*"
+pymfe = "*"
 
 [dev-packages]
 ipykernel = "*"

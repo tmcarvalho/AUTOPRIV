@@ -27,40 +27,38 @@ def concat_each_file(folder):
 # %%
 risk_ppt = concat_each_file('../output/anonymeter/PPT_ARX')
 # %%
-risk_deeplearning = concat_each_file('../output/anonymeter/deep_learning')
+risk_deeplearning = concat_each_file('../output/anonymeter/deep_learningk2')
 # %%
-risk_privateSMOTE = concat_each_file('../output/anonymeter/PrivateSMOTE')
+risk_privateSMOTE = concat_each_file('../output/anonymeter/PrivateSMOTEk2')
 # %%
-risk_dpart = concat_each_file('../output/anonymeter/dpart')
+risk_city = concat_each_file('../output/anonymeter/synthcityk2')
 # %%
 risk_ppt = risk_ppt.reset_index(drop=True)
 risk_deeplearning = risk_deeplearning.reset_index(drop=True)
 risk_privateSMOTE = risk_privateSMOTE.reset_index(drop=True)
-risk_dpart = risk_dpart.reset_index(drop=True)
+risk_city = risk_city.reset_index(drop=True)
 # %%
 risk_ppt['technique'] = 'PPT'
 risk_deeplearning['technique'] = risk_deeplearning['ds_complete'].apply(lambda x: x.split('_')[1])
 risk_privateSMOTE['technique'] = 'PrivateSMOTE'
-risk_dpart['technique'] = risk_dpart['ds_complete'].apply(lambda x: x.split('_')[1])
+risk_city['technique'] = risk_city['ds_complete'].apply(lambda x: x.split('_')[1].upper())
 # %%
 results = []
-results = pd.concat([risk_ppt, risk_deeplearning, risk_privateSMOTE, risk_dpart])
+results = pd.concat([risk_ppt, risk_deeplearning, risk_privateSMOTE, risk_city])
 results = results.reset_index(drop=True)
 # %%
 results['dsn'] = results['ds_complete'].apply(lambda x: x.split('_')[0])
 # %%
-results.loc[results['technique']=='dpart', 'technique'] = 'Independent'
-results.loc[results['technique']=='synthpop', 'technique'] = 'Synthpop'
-results.loc[results['technique']=='copulaGAN', 'technique'] = 'Copula GAN'
+results.loc[results['technique']=='CopulaGAN', 'technique'] = 'Copula GAN'
 results.loc[results['technique']=='PrivateSMOTE', 'technique'] = r'$\epsilon$-PrivateSMOTE'
 # %%
-# results.to_csv('../output/anonymeter.csv', index=False)
+# results.to_csv('../output/anonymeterk2.csv', index=False)
 # %%
 results_risk_max = results.copy()
 results_risk_max = results.loc[results.groupby(['dsn', 'technique'])['value'].idxmin()].reset_index(drop=True)
 
 # %%  BETTER IN PRIVACY
-order = ['PPT', 'Copula GAN', 'TVAE', 'CTGAN', 'Independent', 'Synthpop', r'$\epsilon$-PrivateSMOTE']
+order = ['PPT', 'Copula GAN', 'TVAE', 'CTGAN', 'DPGAN', 'PATEGAN', r'$\epsilon$-PrivateSMOTE']
 
 sns.set_style("darkgrid")
 plt.figure(figsize=(20,10))

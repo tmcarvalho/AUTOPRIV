@@ -1,30 +1,55 @@
 import pandas as pd
 import numpy as np
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.linear_model import LinearRegression
+from pymfe.mfe import MFE
+from sklearn.metrics.pairwise import euclidean_distances
 
 training_data = pd.read_csv('output/metaft.csv')
 testing_data = pd.read_csv('data/original/3.csv')
 
-
-lr = LogisticRegression(random_state=1)
-
 #training_data_scaled = np.clip(training_data, -1e4, 1e4)
 print(training_data.columns[training_data.isnull().any()])
-#training_data_scaled=training_data_scaled.dropna()
 
-X, y = training_data.iloc[:,:-2], training_data.iloc[:,-1]
-print(X)
-#print(y)
-# prepare data to modeling
-testing_data = testing_data.apply(LabelEncoder().fit_transform)
-# testing_data = testing_data.dropna()
-X_test, y_test = testing_data.iloc[:,:-1], testing_data.iloc[:,-1]
+columns_to_drop = ['can_cor.sd', 'cor.mean', 'cor.sd', 'g_mean.mean', 'g_mean.sd',
+       'h_mean.mean', 'h_mean.sd', 'kurtosis.mean', 'kurtosis.sd',
+       'linear_discr.mean', 'linear_discr.sd', 'num_to_cat', 'sd_ratio',
+       'skewness.mean', 'skewness.sd']
+training_data = training_data.drop(columns=columns_to_drop)
 
-lr.fit(X, y)
-# use the best estimated hyperparameter
-predictions = lr.predict(X_test)
+x_train, y_train = training_data.iloc[:,:-2].values, training_data.iloc[:,-1].values
+
+# Extract features from testing data
+mfe = MFE()
+mfe.fit(testing_data.iloc[:, :-1].values, testing_data.iloc[:, -1].values)
+ft = mfe.extract()
+ftdf = pd.DataFrame(ft[1:], columns=ft[0])
+# ftdf.columns.difference(training_data.iloc[:,:-2])
+
+ftdf = ftdf.drop(columns=columns_to_drop)
+
+# Transform testing data using the same scaler
+#X_test_scaled = scaler.transform(ftdf)
+print(x_train)
+# Train logistic regression model on the scaled training data
+lr = LinearRegression()
+lr.fit(x_train, y_train)
+
+# Predict using the logistic regression model
+predictions = lr.predict(ftdf.values)
 
 # Print or use the predictions as needed
 print("Predictions:", predictions)
+
+# Calculate the Euclidean distances between the test example and all training examples
+distances = euclidean_distances(x_train, ftdf.values.reshape(1, -1))
+
+# Get the indices of the top 10 training examples with the smallest distances
+top_10_indices = np.argsort(distances.flatten())[:10]
+print(top_10_indices)
+# Retrieve the top 10 training examples and their corresponding values
+# top_10_training_examples = x_train[top_10_indices]
+# top_10_training_predictions = lr.predict(top_10_training_examples)
+
+# Print or use the top 10 training examples and their predictions as needed
+# print("Top 10 Training Examples:", top_10_training_examples)
+#print("Top 10 Training Predictions:", top_10_training_predictions)

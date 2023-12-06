@@ -23,7 +23,6 @@ mfe = MFE()
 mfe.fit(testing_data.iloc[:, :-1].values, testing_data.iloc[:, -1].values)
 ft = mfe.extract()
 ftdf = pd.DataFrame(ft[1:], columns=ft[0])
-# ftdf.columns.difference(training_data.iloc[:,:-2])
 
 ftdf = ftdf.drop(columns=columns_to_drop)
 
@@ -46,10 +45,4 @@ distances = euclidean_distances(x_train, ftdf.values.reshape(1, -1))
 # Get the indices of the top 10 training examples with the smallest distances
 top_10_indices = np.argsort(distances.flatten())[:10]
 print(top_10_indices)
-# Retrieve the top 10 training examples and their corresponding values
-# top_10_training_examples = x_train[top_10_indices]
-# top_10_training_predictions = lr.predict(top_10_training_examples)
 
-# Print or use the top 10 training examples and their predictions as needed
-# print("Top 10 Training Examples:", top_10_training_examples)
-#print("Top 10 Training Predictions:", top_10_training_predictions)

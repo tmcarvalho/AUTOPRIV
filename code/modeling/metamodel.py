@@ -4,7 +4,7 @@ from sklearn.linear_model import LinearRegression
 from pymfe.mfe import MFE
 from sklearn.metrics.pairwise import euclidean_distances
 
-training_data = pd.read_csv('output/metaft.csv')
+training_data = pd.read_csv('output_analysis/metaft.csv')
 testing_data = pd.read_csv('data/original/3.csv')
 
 #training_data_scaled = np.clip(training_data, -1e4, 1e4)
@@ -16,7 +16,7 @@ columns_to_drop = ['can_cor.sd', 'cor.mean', 'cor.sd', 'g_mean.mean', 'g_mean.sd
        'skewness.mean', 'skewness.sd']
 training_data = training_data.drop(columns=columns_to_drop)
 
-x_train, y_train = training_data.iloc[:,:-2].values, training_data.iloc[:,-1].values
+x_train, y_train = training_data.iloc[:,:-3].values, training_data.iloc[:,-2].values
 
 # Extract features from testing data
 mfe = MFE()
@@ -46,3 +46,4 @@ distances = euclidean_distances(x_train, ftdf.values.reshape(1, -1))
 top_10_indices = np.argsort(distances.flatten())[:10]
 print(top_10_indices)
 
+print(training_data.iloc[top_10_indices,-1])

@@ -27,7 +27,7 @@ def meta_features(file):
     return ftdf
 
 # %%
-performance_results = pd.read_csv('../output/resultsCV.csv')
+performance_results = pd.read_csv('../output_analysis/resultsCV.csv')
 linkability_results = pd.read_csv('../output/anonymeterk2.csv')
 deepl = ['TVAE', 'CopulaGAN', 'CTGAN']
 city = ['PATEGAN', 'DPGAN']
@@ -41,6 +41,7 @@ for idx in performance_results.index:
         linkability_file = linkability_results.loc[(linkability_results.ds_complete == performance_results.ds_complete[idx])].reset_index(drop=True)
         metaft['linkability_score'] = linkability_file.value.iloc[0]
         metaft['mean_test_score'] = performance_results.mean_test_score[idx]
+        metaft['ds_complete'] = performance_results.ds_complete[idx]
     
         # concat each meta feature result
         if c == 0:
@@ -50,7 +51,7 @@ for idx in performance_results.index:
             all_metaft = pd.concat([all_metaft, metaft])
         
 # %%
-all_metaft.to_csv('../output/metaft.csv', index=False)
+all_metaft.to_csv('../output_analysis/metaft.csv', index=False)
 
 # %%
 

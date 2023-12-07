@@ -69,6 +69,7 @@ BO_folder = '../output/modelingBO/'
 deeplearnCVBO, deeplearn_testBO = join_allresults(BO_folder, 'deep_learningk2')
 pptCVBO, ppt_testBO = join_allresults(BO_folder, 'PPT_ARX')
 privatesmoteCVBO, privatesmote_testBO = join_allresults(BO_folder, 'PrivateSMOTEk2')
+cityCVBO, city_testBO = join_allresults(BO_folder, 'synthcityk2')
 origCVBO, orig_testBO = join_allresults(BO_folder, 'original')
 pptbo100CVBO, pptbo100_testBO = join_allresults(BO_folder, 'PPT_ARX_bo100')
 
@@ -104,14 +105,14 @@ origCVRS, orig_testRS = join_allresults(RS_folder, 'original')
 results_cv = pd.concat([deeplearnCVBO, deeplearnCVHB, deeplearnCVSH, deeplearnCVGS, deeplearnCVRS,
                         pptCVBO, pptCVHB, pptCVSH, pptCVGS, pptCVRS,
                         privatesmoteCVBO, privatesmoteCVHB, privatesmoteCVSH, privatesmoteCVRS, privatesmoteCVGS,
-                        cityCVHB, cityCVGS,
+                        cityCVBO, cityCVHB, cityCVGS,
                         origCVBO, origCVHB, origCVSH, origCVGS, origCVRS,
                         pptbo100CVBO]).reset_index(drop=True)
 
 results_test = pd.concat([deeplearn_testBO, deeplearn_testHB, deeplearn_testSH, deeplearn_testGS, deeplearn_testRS,
                           ppt_testBO, ppt_testSH, ppt_testGS, ppt_testRS, ppt_testHB,
                           privatesmote_testBO, privatesmote_testHB, privatesmote_testSH, privatesmote_testRS, privatesmote_testGS,
-                          city_testHB, city_testGS,
+                          city_testBO, city_testHB, city_testGS,
                           orig_testBO, orig_testHB, orig_testSH, orig_testGS, orig_testRS,
                           pptbo100_testBO]).reset_index(drop=True)
 
@@ -148,8 +149,8 @@ for idx in results_cv.index:
         results_test['roc_auc_perdif'][idx] = (results_test['test_roc_auc'][idx] - orig_file_test['test_roc_auc'].iloc[0]) / orig_file_test['test_roc_auc'].iloc[0] * 100
 
 # %%
-# results_cv.to_csv('../output/resultsCV.csv', index=False)
-# results_test.to_csv('../output/results_test.csv', index=False)
+# results_cv.to_csv('../output_analysis/resultsCV.csv', index=False)
+# results_test.to_csv('../output_analysis/results_test.csv', index=False)
 # %%
 # results_cv = pd.read_csv('../output/resultsCV.csv')
 
@@ -240,5 +241,10 @@ plt.ylabel("Time (min)")
 plt.show()
 # figure = ax.get_figure()
 # figure.savefig(f'{os.path.dirname(os.getcwd())}/output/plots/timeCV_optypek2.pdf', bbox_inches='tight')
+
+# %%
+gs_to_repete = results_cv.loc[(results_cv.opt_type=='GridSearch') & (results_cv.time>5)]
+# %%
+bayes_to_repete = results_cv.loc[(results_cv.opt_type=='Bayes') & (results_cv.time>10)]
 
 # %%

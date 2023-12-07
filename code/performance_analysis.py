@@ -180,7 +180,7 @@ plt.ylabel("Percentage difference of \n predictive performance (AUC) in CV")
 sns.move_legend(ax, bbox_to_anchor=(0.5,1.15), loc='upper center', title='Optimization', borderaxespad=0., ncol=5, frameon=False)
 plt.show()
 # figure = ax.get_figure()
-# figure.savefig(f'{os.path.dirname(os.getcwd())}/output/plots/performanceCV_optypek2.pdf', bbox_inches='tight')
+# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performanceCV_optypek2.pdf', bbox_inches='tight')
 
 # %% ROC AUC in out of sample
 sns.set_style("darkgrid")
@@ -194,7 +194,7 @@ plt.ylabel("Predictive performance (AUC) \n in out of sample")
 sns.move_legend(ax, bbox_to_anchor=(0.5,1.15), loc='upper center', title='Optimization', borderaxespad=0., ncol=5, frameon=False)
 plt.show()
 # figure = ax.get_figure()
-# figure.savefig(f'{os.path.dirname(os.getcwd())}/output/plots/performancetest_optype.pdf', bbox_inches='tight')
+# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optype.pdf', bbox_inches='tight')
 
 # %% comparison between Bayes=50 and Bayes=100 iterations
 ppt_results = results_cv.loc[results_cv.technique=='PPT'].reset_index(drop=True)
@@ -215,7 +215,7 @@ axes[0].set_ylabel("Percentage difference of \n predictive performance (AUC) in 
 axes[1].set_ylabel("Time (min)")
 fig.suptitle("Optimization for PPT")
 # plt.show()
-# plt.savefig(f'{os.path.dirname(os.getcwd())}/output/plots/performanceCV_PPT.pdf', bbox_inches='tight')
+# plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performanceCV_PPT.pdf', bbox_inches='tight')
 
 # %% fit time in CV
 sns.set_style("darkgrid")
@@ -228,7 +228,7 @@ plt.xlabel("")
 plt.ylabel("Time (min)")
 plt.show()
 # figure = ax.get_figure()
-# figure.savefig(f'{os.path.dirname(os.getcwd())}/output/plots/fittimeCV_optypek2.pdf', bbox_inches='tight')
+# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/fittimeCV_optypek2.pdf', bbox_inches='tight')
 
 # %% time during all processes in CV
 sns.set_style("darkgrid")
@@ -241,7 +241,7 @@ plt.xlabel("")
 plt.ylabel("Time (min)")
 plt.show()
 # figure = ax.get_figure()
-# figure.savefig(f'{os.path.dirname(os.getcwd())}/output/plots/timeCV_optypek2.pdf', bbox_inches='tight')
+# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/timeCV_optypek2.pdf', bbox_inches='tight')
 
 # %%
 gs_to_repete = results_cv.loc[(results_cv.opt_type=='GridSearch') & (results_cv.time>5)]

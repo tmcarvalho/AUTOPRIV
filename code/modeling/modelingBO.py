@@ -56,9 +56,9 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
 
     # set parameterisation
     param1 = {}
-    param1['classifier__n_estimators'] = Integer(100, 1000)
-    param1['classifier__max_depth'] = Integer(6, 12)
-    param1['classifier__learning_rate'] = Real(0.01, 0.5)
+    param1['classifier__n_estimators'] = Integer(100, 500)
+    param1['classifier__max_depth'] = Integer(4, 10)
+    param1['classifier__learning_rate'] = Real(0.01, 0.1)
     param1['classifier'] = [xgb]
 
     xgb_fit_params = {
@@ -68,21 +68,21 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
     }
 
     param2 = {}
-    param2['classifier__alpha'] = Real(1e-5, 1e-3)
-    param2['classifier__max_iter'] = Integer(1000, 100000)
-    param2['classifier__eta0'] = Integer(0, 1)
+    param2['classifier__alpha'] = Real(0.01, 10)
+    param2['classifier__max_iter'] = Integer(100000, 1000000)
+    param2['classifier__eta0'] = Integer(0.01, 10)
     param2['classifier'] = [sdg]
     
     param3 = {}
-    param3['classifier__n_estimators'] = Integer(100, 1000)
-    param3['classifier__max_depth'] = Integer(6, 12)
-    param3['classifier__learning_rate'] = Real(0.01, 0.5)
+    param3['classifier__n_estimators'] = Integer(100, 500)
+    param3['classifier__max_depth'] = Integer(4, 10)
+    param3['classifier__learning_rate'] = Real(0.01, 0.1)
     param3['classifier'] = [grb]
 
     param4 = {}
     param4['classifier__hidden_layer_sizes'] = Integer(int(n_feat // 2), n_feat)
-    param4['classifier__alpha'] = Real(1e-4, 1e-2)
-    param4['classifier__max_iter'] = Integer(1000, 100000)
+    param4['classifier__alpha'] = Real(0.01, 10)
+    param4['classifier__max_iter'] = Integer(100000, 1000000)
     param4['classifier'] = [nnet]
 
     # define metric functions -- doens't accept multi measures
@@ -117,22 +117,18 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
     print("Start modeling in out of sample")
 
     score_cv = {
-    'params':[], 'model':[], 'test_roc_auc_estimated':[], 'test_roc_auc': [], 'opt_type': [],
+    'params':[], 'model':[], 'test_roc_auc': [], 'opt_type': [],
     }
 
-    # use the best estimated hyperparameter
-    grid_res = grid.predict(x_test)
+    for i in range(len(validation)):
+        # set each model for prediction on test
+        clf_best = grid.best_estimator_.set_params(**grid.cv_results_['params'][i]).fit(x_train, y_train)
+        clf = clf_best.predict(x_test)
+        score_cv['params'].append(str(grid.cv_results_['params'][i]))
+        score_cv['model'].append(validation.loc[i, 'model'])
+        score_cv['test_roc_auc'].append(roc_auc_score(y_test, clf, max_fpr=0.001))
+        score_cv['opt_type'].append("Bayes")
 
-    # retrain the best estimator using all training data
-    clf_best = grid.best_estimator_.fit(x_train, y_train)
-    clf = clf_best.predict(x_test)
-
-    score_cv['params'].append(str(grid.best_params_))
-    score_cv['model'] = type(grid.best_estimator_.steps[-1][1]).__name__
-    score_cv['test_roc_auc_estimated'].append(roc_auc_score(y_test, grid_res))
-    score_cv['test_roc_auc'].append(roc_auc_score(y_test, clf))
-    score_cv['opt_type'].append("Bayes")
-    
     score_cv = pd.DataFrame(score_cv)
 
     return [validation, score_cv]

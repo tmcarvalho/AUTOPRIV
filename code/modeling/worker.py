@@ -7,7 +7,7 @@ import warnings
 import functools
 import threading
 import argparse
-from apply_models import modeling_synthdata, modeling_ppt
+from apply_models import modeling
 import pika
 
 warnings.filterwarnings(action='ignore', category=FutureWarning)
@@ -41,16 +41,13 @@ def ack_message(ch, delivery_tag, work_sucess):
         pass
 
 
-def modeling(file):
-    if args.type != 'ppt':
-        modeling_synthdata(file, args)
-    else:
-        modeling_ppt(file, args)
+def modeling_(file):
+    modeling(file, args)
 
 # %%
 def do_work(conn, ch, delivery_tag, body):
     msg = body.decode('utf-8')
-    work_sucess = modeling(msg)
+    work_sucess = modeling_(msg)
     cb = functools.partial(ack_message, ch, delivery_tag, work_sucess)
     conn.add_callback_threadsafe(cb)
 
@@ -88,11 +85,17 @@ connection.close()
 
 
 # find . -name ".DS_Store" -delete
-# python3 code/modeling/task.py  --input_folder "data/PPT_transformed/PPT_train"
-# python3 code/modeling/worker.py --type "ppt" --opt "HB" --input_folder "data/PPT_transformed/PPT_train" --output_folder "output/modelingHB/PPT_ARX"
-# python3 code/modeling/worker.py --type "gans" --opt "BO" --input_folder "data/deep_learning" --output_folder "output/modelingBO/deep_learning"
-# python3 code/modeling/worker.py --type "gans" --opt "HB" --input_folder "data/deep_learning" --output_folder "output/modelingHB/deep_learning"
-# python3 code/modeling/worker.py --type "gans" --opt "SH" --input_folder "data/deep_learning" --output_folder "output/modelingSH/deep_learning"
-# python3 code/modeling/worker.py --type "gans" --opt "GS" --input_folder "data/deep_learning" --output_folder "output/modelingGS/deep_learning"
-# python3 code/modeling/worker.py --type "gans" --opt "RS" --input_folder "data/deep_learning" --output_folder "output/modelingRS/deep_learning"
-# python3 code/modeling/worker.py --type "PrivateSMOTE" --opt "GS" --input_folder "output/oversampled/PrivateSMOTE_force_laplace" --output_folder "output/modeling/PrivateSMOTE_force_laplace"
+# python3 code/modeling/task.py --input_folder "data/PPT_transformed/PPT_train"
+# python3 code/modeling/task.py --input_folder "data/PrivateSMOTEk2"
+# python3 code/modeling/task.py --input_folder "data/original"
+# python3 code/modeling/task.py --input_folder "data/synthcityk2"
+# python3 code/modeling/worker.py --type "ppt" --opt "BO" --input_folder "data/PPT_transformed/PPT_train" --output_folder "output/modelingBO/PPT_ARX_bo100"
+# python3 code/modeling/worker.py --type "ppt" --opt "RS" --input_folder "data/PPT_transformed/PPT_train" --output_folder "output/modelingRS/PPT_ARX"
+# python3 code/modeling/worker.py --type "gans" --opt "BO" --input_folder "data/deep_learningk2" --output_folder "output/modelingBO/deep_learningk2"
+# python3 code/modeling/worker.py --type "gans" --opt "HB" --input_folder "data/deep_learningk2" --output_folder "output/modelingHB/deep_learningk2"
+# python3 code/modeling/worker.py --type "gans" --opt "SH" --input_folder "data/deep_learningk2" --output_folder "output/modelingSH/deep_learningk2"
+# python3 code/modeling/worker.py --type "gans" --opt "GS" --input_folder "data/deep_learningk2" --output_folder "output/modelingGS/deep_learningk2"
+# python3 code/modeling/worker.py --type "gans" --opt "RS" --input_folder "data/deep_learningk2" --output_folder "output/modelingRS/deep_learningk2"
+# python3 code/modeling/worker.py --type "PrivateSMOTE" --opt "HB" --input_folder "data/PrivateSMOTEk2" --output_folder "output/modelingHB/PrivateSMOTEk2"
+# python3 code/modeling/worker.py --type "synthcity" --opt "BO" --input_folder "data/synthcityk2" --output_folder "output/modelingBO/synthcityk2"
+# python3 code/modeling/worker.py --type "original" --opt "HB" --input_folder "data/original" --output_folder "output/modelingHB/original"

@@ -37,7 +37,7 @@ def save_results(file, args, results):
     results[1].to_csv(f'{output_folder_test}/{file}.csv', index=False)
 
 
-def modelling(file, args):
+def modeling(file, args):
     """Apply predictive performance.
 
     Args:

@@ -24,6 +24,8 @@ def join_allresults(folder, technique):
 
             # select the best model in CV
             best_cv = result_cv_train.iloc[[result_cv_train['mean_test_score'].idxmax()]].reset_index(drop=True)
+            # use the best model in CV to get the results of it in out of sample
+            best_test = result_test.loc[result_test.model == best_cv.model[0],:]
 
             # add optimzation type to the train results
             best_cv['opt_type'] = result_test['opt_type']
@@ -31,36 +33,36 @@ def join_allresults(folder, technique):
             # get technique
             if technique=='deep_learningk2':
                 best_cv['technique'] = file.split('_')[1]
-                result_test['technique'] = file.split('_')[1]
+                best_test['technique'] = file.split('_')[1]
             elif technique=='synthcityk2':
                 best_cv['technique'] = file.split('_')[1].upper()
-                result_test['technique'] = file.split('_')[1].upper()
+                best_test['technique'] = file.split('_')[1].upper()
             elif technique == 'PrivateSMOTEk2':
                 best_cv['technique'] = r'$\epsilon$-PrivateSMOTE'
-                result_test['technique'] = r'$\epsilon$-PrivateSMOTE'
+                best_test['technique'] = r'$\epsilon$-PrivateSMOTE'
             else:
                 best_cv['technique'] = technique
-                result_test['technique'] = technique
+                best_test['technique'] = technique
 
             # get dataset number
             best_cv['fit_time_sum'] = result_cv_train.mean_fit_time.sum() / 60
             best_cv['ds'] = file.split('_')[0]
             best_cv['ds_complete'] = file
-            result_test['ds'] = file.split('_')[0]
-            result_test['ds_complete'] = file
+            best_test['ds'] = file.split('_')[0]
+            best_test['ds_complete'] = file
 
             # concat each test result
             if c == 0:
                 concat_results_cv = best_cv
-                concat_results_test = result_test
+                concat_results_test = best_test
                 c += 1
             else:  
                 concat_results_cv = pd.concat([concat_results_cv, best_cv])
-                concat_results_test = pd.concat([concat_results_test, result_test])
+                concat_results_test = pd.concat([concat_results_test, best_test])
         except Exception:
             with open('../output/modeling_failed.txt', 'a', encoding='utf-8') as failed_file:
                 # Save the name of the failed file to a text file
-                failed_file.write(f'{file} --- {technique} --- {result_test.opt_type[0]}\n')
+                failed_file.write(f'{file} --- {technique} --- {best_test.opt_type[0]}\n')
 
     return concat_results_cv, concat_results_test
 
@@ -75,11 +77,12 @@ pptbo100CVBO, pptbo100_testBO = join_allresults(BO_folder, 'PPT_ARX_bo100')
 
 # %% Hyperband
 HB_folder = '../output/modelingHB/'
-deeplearnCVHB, deeplearn_testHB = join_allresults(HB_folder, 'deep_learningk2')
+#deeplearnCVHB, deeplearn_testHB = join_allresults(HB_folder, 'deep_learningk2')
 pptCVHB, ppt_testHB = join_allresults(HB_folder, 'PPT_ARX')
-privatesmoteCVHB, privatesmote_testHB = join_allresults(HB_folder, 'PrivateSMOTEk2')
-cityCVHB, city_testHB = join_allresults(HB_folder, 'synthcityk2')
+#privatesmoteCVHB, privatesmote_testHB = join_allresults(HB_folder, 'PrivateSMOTEk2')
+#cityCVHB, city_testHB = join_allresults(HB_folder, 'synthcityk2')
 origCVHB, orig_testHB = join_allresults(HB_folder, 'original')
+origCVHB_old, orig_testHB_old = join_allresults('../output/modeling with original test/modelingRS/', 'original')
 
 # %% Sussessive Halving
 SH_folder = '../output/modelingSH/'
@@ -96,10 +99,12 @@ cityCVGS, city_testGS = join_allresults(GS_folder, 'synthcityk2')
 origCVGS, orig_testGS = join_allresults(GS_folder, 'original')
 # %% Random Search
 RS_folder = '../output/modelingRS/'
-deeplearnCVRS, deeplearn_testRS = join_allresults(RS_folder, 'deep_learningk2')
+#deeplearnCVRS, deeplearn_testRS = join_allresults(RS_folder, 'deep_learningk2')
 pptCVRS, ppt_testRS = join_allresults(RS_folder, 'PPT_ARX')
-privatesmoteCVRS, privatesmote_testRS = join_allresults(RS_folder, 'PrivateSMOTEk2')
+#privatesmoteCVRS, privatesmote_testRS = join_allresults(RS_folder, 'PrivateSMOTEk2')
 origCVRS, orig_testRS = join_allresults(RS_folder, 'original')
+
+origCVRS_old, orig_testRS_old = join_allresults('../output/modeling with original test/modelingRS/', 'original')
 
 # %% concat all techniques
 results_cv = pd.concat([deeplearnCVBO, deeplearnCVHB, deeplearnCVSH, deeplearnCVGS, deeplearnCVRS,
@@ -149,11 +154,11 @@ for idx in results_cv.index:
         results_test['roc_auc_perdif'][idx] = (results_test['test_roc_auc'][idx] - orig_file_test['test_roc_auc'].iloc[0]) / orig_file_test['test_roc_auc'].iloc[0] * 100
 
 # %%
-# results_cv.to_csv('../output_analysis/resultsCV.csv', index=False)
-# results_test.to_csv('../output_analysis/results_test.csv', index=False)
+# results_cv.to_csv('../output_analysis/resultsCV_new.csv', index=False)
+# results_test.to_csv('../output_analysis/results_test_new.csv', index=False)
 # %%
-# results_cv = pd.read_csv('../output_analysis/resultsCV.csv')
-# results_test = pd.read_csv('../output_analysis/results_test.csv')
+results_cv = pd.read_csv('../output_analysis/resultsCV.csv')
+results_test = pd.read_csv('../output_analysis/results_test.csv')
 
 # %% remove datasets that failed to produce synthcity variants due to a low number of singleouts
 # remove_ds = ['ds8', 'ds32', 'ds24', 'ds2', 'ds59']
@@ -170,28 +175,29 @@ order_technique = ['PPT', 'Copula GAN', 'TVAE', 'CTGAN', r'$\epsilon$-PrivateSMO
 order_optype = ['GridSearch', 'RandomSearch', 'Bayes', 'Halving', 'Hyperband']
 # %% ROC AUC in Cross Validation
 sns.set_style("darkgrid")
-plt.figure(figsize=(15,8))
-ax = sns.boxplot(data=results_cv, x='technique', y='roc_auc_perdif', hue='opt_type',
-                 order=order_technique, hue_order=order_optype, palette="Set3")
-sns.set(font_scale=1.5)
+plt.figure(figsize=(18,10))
+ax = sns.boxplot(data=results_cv, x='opt_type', y='roc_auc_perdif', hue='technique',
+                 order=order_optype, hue_order=order_technique, palette="Set3")
+sns.set(font_scale=2)
 plt.xticks(rotation=45)
 plt.xlabel("")
+# plt.yscale('symlog')
 plt.ylabel("Percentage difference of \n predictive performance (AUC) in CV")
-sns.move_legend(ax, bbox_to_anchor=(0.5,1.15), loc='upper center', title='Optimization', borderaxespad=0., ncol=5, frameon=False)
+sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transformations', borderaxespad=0., frameon=False)
 plt.show()
 # figure = ax.get_figure()
 # figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performanceCV_optypek2.pdf', bbox_inches='tight')
 
 # %% ROC AUC in out of sample
 sns.set_style("darkgrid")
-plt.figure(figsize=(15,8))
-ax = sns.boxplot(data=results_test, x='technique', y='roc_auc_perdif', hue='opt_type',
-                 order=order_technique, hue_order=order_optype, palette="Set3")
-sns.set(font_scale=1.5)
+plt.figure(figsize=(18,10))
+ax = sns.boxplot(data=results_test, x='opt_type', y='roc_auc_perdif', hue='technique',
+                 order=order_optype, hue_order=order_technique, palette="Set3")
+sns.set(font_scale=2)
 plt.xticks(rotation=45)
 plt.xlabel("")
 plt.ylabel("Predictive performance (AUC) \n in out of sample")
-sns.move_legend(ax, bbox_to_anchor=(0.5,1.15), loc='upper center', title='Optimization', borderaxespad=0., ncol=5, frameon=False)
+sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transformations', borderaxespad=0., frameon=False)
 plt.show()
 # figure = ax.get_figure()
 # figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optype.pdf', bbox_inches='tight')
@@ -248,4 +254,53 @@ gs_to_repete = results_cv.loc[(results_cv.opt_type=='GridSearch') & (results_cv.
 # %%
 bayes_to_repete = results_cv.loc[(results_cv.opt_type=='Bayes') & (results_cv.time>10)]
 
+# %%
+ppt_old_cv = results_cv.loc[(results_cv.opt_type=='RandomSearch') & (results_cv.technique=='PPT')]
+ppt_old_cv['choice'] = 'old'
+origCVRS_old['choice'] = 'old'
+pptCVRS['choice'] ='new'
+origCVRS['choice'] = 'new'
+ppt_old_test = results_test.loc[(results_test.opt_type=='RandomSearch') & (results_test.technique=='PPT')]
+ppt_old_test['choice'] = 'old'
+orig_testRS_old['choice'] = 'old'
+ppt_testRS['choice'] ='new'
+orig_testRS['choice'] ='new'
+ppt_cv = pd.concat([ppt_old_cv, pptCVRS, origCVRS_old, origCVRS])
+ppt_test = pd.concat([ppt_old_test, ppt_testRS, orig_testRS_old, orig_testRS])
+# %%
+sns.set_style("darkgrid")
+fig, axes = plt.subplots(1, 2, figsize=(15,6.5))
+sns.boxplot(ax=axes[0], data=ppt_cv, x='choice', y='mean_test_score', hue='technique')
+sns.boxplot(ax=axes[1], data=ppt_test, x='choice', y='test_roc_auc', hue='technique')
+sns.set(font_scale=1.5)
+axes[0].set_xlabel("Results in CV")
+axes[1].set_xlabel("Results in out of sample")
+axes[0].set_xticklabels(axes[0].get_xticklabels(), rotation=45)
+axes[1].set_xticklabels(axes[1].get_xticklabels(), rotation=45)
+fig.suptitle("RandomSearch for PPT")
+
+# %%
+ppt_old_cv_ = results_cv.loc[(results_cv.opt_type=='Hyperband') & (results_cv.technique=='PPT')]
+ppt_old_cv_['choice'] = 'old'
+origCVHB_old['choice'] = 'old'
+pptCVHB['choice'] ='new'
+origCVHB['choice'] = 'new'
+ppt_old_test_ = results_test.loc[(results_test.opt_type=='Hyperband') & (results_test.technique=='PPT')]
+ppt_old_test_['choice'] = 'old'
+orig_testHB_old['choice'] = 'old'
+ppt_testHB['choice'] ='new'
+orig_testHB['choice'] ='new'
+ppt_cv_ = pd.concat([ppt_old_cv_, pptCVHB, origCVHB_old, origCVHB])
+ppt_test_ = pd.concat([ppt_old_test_, ppt_testHB, orig_testHB_old, orig_testRS])
+# %%
+sns.set_style("darkgrid")
+fig, axes = plt.subplots(1, 2, figsize=(15,6.5))
+sns.boxplot(ax=axes[0], data=ppt_cv_, x='choice', y='mean_test_score', hue='technique')
+sns.boxplot(ax=axes[1], data=ppt_test_, x='choice', y='test_roc_auc', hue='technique')
+sns.set(font_scale=1.5)
+axes[0].set_xlabel("Results in CV")
+axes[1].set_xlabel("Results in out of sample")
+axes[0].set_xticklabels(axes[0].get_xticklabels(), rotation=45)
+axes[1].set_xticklabels(axes[1].get_xticklabels(), rotation=45)
+fig.suptitle("Hyperband for PPT")
 # %%

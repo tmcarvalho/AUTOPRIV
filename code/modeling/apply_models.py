@@ -7,6 +7,7 @@ import warnings
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
 from modelingBO import evaluate_model_bo
 from modelingSH import evaluate_model_sh
 from modelingHB import evaluate_model_hb
@@ -32,66 +33,11 @@ def save_results(file, args, results):
     if not os.path.exists(output_folder_test):
         os.makedirs(output_folder_test)
 
-    results[0].to_csv(f'{output_folder_val}/{file}', index=False)
-    results[1].to_csv(f'{output_folder_test}/{file}', index=False)
+    results[0].to_csv(f'{output_folder_val}/{file}.csv', index=False)
+    results[1].to_csv(f'{output_folder_test}/{file}.csv', index=False)
 
-def modeling_ppt(file, args):
-    """Apply predictive performance.
 
-    Args:
-        file (string): input file
-
-    Raises:
-        Exception: failed to apply smote when single outs
-        class is great than non single outs.
-        exc: failed to writing the results.
-    """
-  
-    print(f'{args.input_folder}/{file}')
-
-    test_folder = 'data/PPT_transformed/PPT_test'
-    _, _, test_files = next(os.walk(f'{test_folder}'))
-    ff = file.split('.')[0]
-    f1 = ff.split('_')[0]
-    f2 = ff.split('_')[2]
-    f = f1+'_'+f2
-    print(f)
-    test_file = [fl for fl in test_files if fl.split('.')[0] == f]
-    print(test_file)
-    test_data = pd.read_csv(f'{test_folder}/{test_file[0]}')
-    data = pd.read_csv(f'{args.input_folder}/{file}')
-
-    # prepare data to modeling
-    test_data = test_data.apply(LabelEncoder().fit_transform)
-    data = data.apply(LabelEncoder().fit_transform)
-
-    # split data 80/20
-    x_train, y_train = data.iloc[:, :-1], data.iloc[:, -1]
-
-    x_test = test_data.iloc[:, :-1]
-    y_test = test_data.iloc[:, -1]
-
-    # predictive performance
-    try:
-        if args.opt == 'BO':
-            results = evaluate_model_bo(x_train, x_test, y_train, y_test)
-        elif args.opt == 'HB':
-            results = evaluate_model_hb(x_train, x_test, y_train, y_test)
-        elif args.opt == 'SH': 
-            results = evaluate_model_sh(x_train, x_test, y_train, y_test)
-        elif args.opt == 'GS': 
-            results = evaluate_model_gs(x_train, x_test, y_train, y_test)
-        else:
-            results = evaluate_model_rs(x_train, x_test, y_train, y_test)
-        save_results(file, args, results)
-    
-    except Exception:
-        with open('output/failed_files.txt', 'a') as failed_file:
-            #  Save the name of the failed file to a text file
-            failed_file.write(f'{args.input_folder}/{file} --- {args.opt}\n')
-
-# %%
-def modeling_synthdata(file, args):
+def modelling(file, args):
     """Apply predictive performance.
 
     Args:
@@ -99,38 +45,37 @@ def modeling_synthdata(file, args):
     """
     print(f'{args.input_folder}/{file}')
 
-    indexes = np.load('indexes.npy', allow_pickle=True).item()
-    indexes = pd.DataFrame.from_dict(indexes)
+    data = pd.read_csv(f'{args.input_folder}/{file}.csv')
 
-    f = list(map(int, re.findall(r'\d+', file.split('_')[0])))
-    index = indexes.loc[indexes['ds']==str(f[0]), 'indexes'].values[0]
+    # extract the same 80% of the original data
+    if len(file) <= 6:
+        indexes = np.load('indexes.npy', allow_pickle=True).item()
+        indexes = pd.DataFrame.from_dict(indexes)
 
-    orig_folder = 'data/original'
-    _, _, orig_files = next(os.walk(f'{orig_folder}'))
-    orig_file = [fl for fl in orig_files if list(map(int, re.findall(r'\d+', fl.split('.')[0])))[0] == f[0]]
-    orig_data = pd.read_csv(f'{orig_folder}/{orig_file[0]}')
-    data = pd.read_csv(f'{args.input_folder}/{file}')
-
-    # prepare data to modeling
-    orig_data = orig_data.apply(LabelEncoder().fit_transform)
+        index = indexes.loc[indexes['ds']==file, 'indexes'].values[0]
+        
+        data_idx = list(set(list(data.index)) - set(index))
+        data = data.iloc[data_idx, :]
+        print(data.shape)
     data = data.apply(LabelEncoder().fit_transform)
 
+    # prepare data to modeling
     if args.type == 'PrivateSMOTE':
         x_train, y_train = data.iloc[:, :-2], data.iloc[:, -2]
     else:
         x_train, y_train = data.iloc[:, :-1], data.iloc[:, -1]
 
-    x_test = orig_data.iloc[index, :-1]
-    y_test = orig_data.iloc[index, -1]
+    # Split the training data into a training set and a validation set for early stop in XGBClassifier
+    x_train, x_test, y_train, y_test = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
 
     try:
         if args.opt == 'BO':
             results = evaluate_model_bo(x_train, x_test, y_train, y_test)
         elif args.opt == 'HB':
             results = evaluate_model_hb(x_train, x_test, y_train, y_test)
-        elif args.opt == 'SH': 
+        elif args.opt == 'SH':
             results = evaluate_model_sh(x_train, x_test, y_train, y_test)
-        elif args.opt == 'GS': 
+        elif args.opt == 'GS':
             results = evaluate_model_gs(x_train, x_test, y_train, y_test)
         else:
             results = evaluate_model_rs(x_train, x_test, y_train, y_test)

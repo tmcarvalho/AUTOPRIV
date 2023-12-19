@@ -18,15 +18,14 @@ def join_allresults(folder, technique):
     _,_,result_files = next(walk(f'{folder}/{technique}/test/'))
 
     for file in result_files:
-        try: 
+        try:
             result_cv_train = pd.read_csv(f'{folder}/{technique}/validation/{file}')
             result_test = pd.read_csv(f'{folder}/{technique}/test/{file}')
-
             # select the best model in CV
-            best_cv = result_cv_train.iloc[[result_cv_train['mean_test_score'].idxmax()]].reset_index(drop=True)
+            best_cv = result_cv_train.iloc[[result_cv_train['mean_test_score'].idxmax()]]
             # use the best model in CV to get the results of it in out of sample
-            best_test = result_test.loc[result_test.model == best_cv.model[0],:]
-
+            best_test = result_test.iloc[best_cv.index,:]
+            # TODO: validate models in best_test and best_cv 
             # add optimzation type to the train results
             best_cv['opt_type'] = result_test['opt_type']
 
@@ -62,7 +61,7 @@ def join_allresults(folder, technique):
         except Exception:
             with open('../output/modeling_failed.txt', 'a', encoding='utf-8') as failed_file:
                 # Save the name of the failed file to a text file
-                failed_file.write(f'{file} --- {technique} --- {best_test.opt_type[0]}\n')
+                failed_file.write(f'{file} --- {technique} --- {result_test.opt_type[0]}\n')
 
     return concat_results_cv, concat_results_test
 
@@ -70,10 +69,9 @@ def join_allresults(folder, technique):
 BO_folder = '../output/modelingBO/'
 deeplearnCVBO, deeplearn_testBO = join_allresults(BO_folder, 'deep_learningk2')
 pptCVBO, ppt_testBO = join_allresults(BO_folder, 'PPT_ARX')
-privatesmoteCVBO, privatesmote_testBO = join_allresults(BO_folder, 'PrivateSMOTEk2')
-cityCVBO, city_testBO = join_allresults(BO_folder, 'synthcityk2')
+#privatesmoteCVBO, privatesmote_testBO = join_allresults(BO_folder, 'PrivateSMOTEk2')
+#cityCVBO, city_testBO = join_allresults(BO_folder, 'synthcityk2')
 origCVBO, orig_testBO = join_allresults(BO_folder, 'original')
-pptbo100CVBO, pptbo100_testBO = join_allresults(BO_folder, 'PPT_ARX_bo100')
 
 # %% Hyperband
 HB_folder = '../output/modelingHB/'
@@ -82,54 +80,49 @@ pptCVHB, ppt_testHB = join_allresults(HB_folder, 'PPT_ARX')
 #privatesmoteCVHB, privatesmote_testHB = join_allresults(HB_folder, 'PrivateSMOTEk2')
 #cityCVHB, city_testHB = join_allresults(HB_folder, 'synthcityk2')
 origCVHB, orig_testHB = join_allresults(HB_folder, 'original')
-origCVHB_old, orig_testHB_old = join_allresults('../output/modeling with original test/modelingRS/', 'original')
 
 # %% Sussessive Halving
 SH_folder = '../output/modelingSH/'
 deeplearnCVSH, deeplearn_testSH = join_allresults(SH_folder, 'deep_learningk2')
 pptCVSH, ppt_testSH = join_allresults(SH_folder, 'PPT_ARX')
-privatesmoteCVSH, privatesmote_testSH = join_allresults(SH_folder, 'PrivateSMOTEk2')
+#privatesmoteCVSH, privatesmote_testSH = join_allresults(SH_folder, 'PrivateSMOTEk2')
+#cityCVSH, city_testSH = join_allresults(SH_folder, 'synthcityk2')
 origCVSH, orig_testSH = join_allresults(SH_folder, 'original')
 # %% Grid Search
 GS_folder = '../output/modelingGS/'
 deeplearnCVGS, deeplearn_testGS = join_allresults(GS_folder, 'deep_learningk2')
 pptCVGS, ppt_testGS = join_allresults(GS_folder, 'PPT_ARX')
-privatesmoteCVGS, privatesmote_testGS = join_allresults(GS_folder, 'PrivateSMOTEk2')
-cityCVGS, city_testGS = join_allresults(GS_folder, 'synthcityk2')
+#privatesmoteCVGS, privatesmote_testGS = join_allresults(GS_folder, 'PrivateSMOTEk2')
+#cityCVGS, city_testGS = join_allresults(GS_folder, 'synthcityk2')
 origCVGS, orig_testGS = join_allresults(GS_folder, 'original')
 # %% Random Search
 RS_folder = '../output/modelingRS/'
-#deeplearnCVRS, deeplearn_testRS = join_allresults(RS_folder, 'deep_learningk2')
+deeplearnCVRS, deeplearn_testRS = join_allresults(RS_folder, 'deep_learningk2')
 pptCVRS, ppt_testRS = join_allresults(RS_folder, 'PPT_ARX')
 #privatesmoteCVRS, privatesmote_testRS = join_allresults(RS_folder, 'PrivateSMOTEk2')
+#cityCVRS, city_testRS = join_allresults(RS_folder, 'synthcityk2')
 origCVRS, orig_testRS = join_allresults(RS_folder, 'original')
 
-origCVRS_old, orig_testRS_old = join_allresults('../output/modeling with original test/modelingRS/', 'original')
-
 # %% concat all techniques
-results_cv = pd.concat([deeplearnCVBO, deeplearnCVHB, deeplearnCVSH, deeplearnCVGS, deeplearnCVRS,
+results_cv = pd.concat([deeplearnCVBO, deeplearnCVRS, deeplearnCVSH, deeplearnCVGS, #deeplearnCVHB,
                         pptCVBO, pptCVHB, pptCVSH, pptCVGS, pptCVRS,
-                        privatesmoteCVBO, privatesmoteCVHB, privatesmoteCVSH, privatesmoteCVRS, privatesmoteCVGS,
-                        cityCVBO, cityCVHB, cityCVGS,
+                        #privatesmoteCVBO, privatesmoteCVHB, privatesmoteCVSH, privatesmoteCVRS, privatesmoteCVGS,
+                        #cityCVBO, cityCVHB, cityCVGS, cityCVRS, cityCVSH
                         origCVBO, origCVHB, origCVSH, origCVGS, origCVRS,
-                        pptbo100CVBO]).reset_index(drop=True)
+                        ]).reset_index(drop=True)
 
-results_test = pd.concat([deeplearn_testBO, deeplearn_testHB, deeplearn_testSH, deeplearn_testGS, deeplearn_testRS,
-                          ppt_testBO, ppt_testSH, ppt_testGS, ppt_testRS, ppt_testHB,
-                          privatesmote_testBO, privatesmote_testHB, privatesmote_testSH, privatesmote_testRS, privatesmote_testGS,
-                          city_testBO, city_testHB, city_testGS,
+results_test = pd.concat([deeplearn_testBO, deeplearn_testRS, deeplearn_testSH, deeplearn_testGS, #deeplearn_testHB,
+                          ppt_testBO, ppt_testHB, ppt_testSH, ppt_testGS, ppt_testRS,
+                          #privatesmote_testBO, privatesmote_testHB, privatesmote_testSH, privatesmote_testRS, privatesmote_testGS,
+                          #city_testBO, city_testHB, city_testGS, city_testRS, city_testSH
                           orig_testBO, orig_testHB, orig_testSH, orig_testGS, orig_testRS,
-                          pptbo100_testBO]).reset_index(drop=True)
+                          ]).reset_index(drop=True)
 
 # %%
 results_cv.loc[results_cv['technique']=='PPT_ARX', 'technique'] = 'PPT'
 results_cv.loc[results_cv['technique']=='CopulaGAN', 'technique'] = 'Copula GAN'
 results_test.loc[results_test['technique']=='PPT_ARX', 'technique'] = 'PPT'
 results_test.loc[results_test['technique']=='CopulaGAN', 'technique'] = 'Copula GAN'
-results_cv.loc[results_cv['technique']=='PPT_ARX_bo100', 'opt_type'] = 'BO 100'
-results_cv.loc[results_cv['technique']=='PPT_ARX_bo100', 'technique'] = 'PPT'
-results_test.loc[results_test['technique']=='PPT_ARX_bo100', 'opt_type'] = 'BO 100'
-results_test.loc[results_test['technique']=='PPT_ARX_bo100', 'technique'] = 'PPT'
 # %% prepare to calculate percentage difference
 original_results_cv = results_cv.loc[results_cv['technique']=='original'].reset_index(drop=True)
 original_results_test = results_test.loc[results_test['technique']=='original'].reset_index(drop=True)
@@ -144,26 +137,26 @@ original_results_test['ds'] = original_results_test['ds'].apply(lambda x: f'ds{x
 results_cv['roc_auc_perdif'] = np.NaN
 results_test['roc_auc_perdif'] = np.NaN
 for idx in results_cv.index:
-    if results_cv.opt_type[idx] != 'BO 100':
-        orig_file_cv = original_results_cv.loc[(original_results_cv.ds == results_cv.ds[idx]) & (original_results_cv.opt_type == results_cv.opt_type[idx])].reset_index(drop=True)
-        orig_file_test = original_results_test.loc[(original_results_test.ds == results_test.ds[idx]) & (original_results_test.opt_type == results_test.opt_type[idx])].reset_index(drop=True)
+    orig_file_cv = original_results_cv.loc[(original_results_cv.ds == results_cv.ds[idx]) & (original_results_cv.opt_type == results_cv.opt_type[idx])].reset_index(drop=True)
+    orig_file_test = original_results_test.loc[(original_results_test.ds == results_test.ds[idx]) & (original_results_test.opt_type == results_test.opt_type[idx])].reset_index(drop=True)
 
-        # calculate the percentage difference
-        # 100 * (Sc - Sb) / Sb
-        results_cv['roc_auc_perdif'][idx] = (results_cv['mean_test_score'][idx] - orig_file_cv['mean_test_score'].iloc[0]) / orig_file_cv['mean_test_score'].iloc[0] * 100
-        results_test['roc_auc_perdif'][idx] = (results_test['test_roc_auc'][idx] - orig_file_test['test_roc_auc'].iloc[0]) / orig_file_test['test_roc_auc'].iloc[0] * 100
+    # calculate the percentage difference
+    # 100 * (Sc - Sb) / Sb
+    results_cv['roc_auc_perdif'][idx] = (results_cv['mean_test_score'][idx] - orig_file_cv['mean_test_score'].iloc[0]) / orig_file_cv['mean_test_score'].iloc[0] * 100
+    results_test['roc_auc_perdif'][idx] = (results_test['test_roc_auc'][idx] - orig_file_test['test_roc_auc'].iloc[0]) / orig_file_test['test_roc_auc'].iloc[0] * 100
 
 # %%
 # results_cv.to_csv('../output_analysis/resultsCV_new.csv', index=False)
 # results_test.to_csv('../output_analysis/results_test_new.csv', index=False)
 # %%
-results_cv = pd.read_csv('../output_analysis/resultsCV.csv')
-results_test = pd.read_csv('../output_analysis/results_test.csv')
+# results_cv = pd.read_csv('../output_analysis/resultsCV_new.csv')
+# results_test = pd.read_csv('../output_analysis/results_test_new.csv')
 
 # %% remove datasets that failed to produce synthcity variants due to a low number of singleouts
 # remove_ds = ['ds8', 'ds32', 'ds24', 'ds2', 'ds59']
-# results_cv = results_cv[~results_cv['ds'].isin(remove_ds)]
-# results_test = results_test[~results_test['ds'].isin(remove_ds)]
+remove_ds = ['ds2', 'ds59', 'ds56', 'ds55', 'ds51', 'ds50', 'ds38', 'ds37', 'ds33']
+results_cv = results_cv[~results_cv['ds'].isin(remove_ds)]
+results_test = results_test[~results_test['ds'].isin(remove_ds)]
 # %%
 PROPS = {
     'boxprops':{'facecolor':'#00BFC4', 'edgecolor':'black'},
@@ -202,27 +195,6 @@ plt.show()
 # figure = ax.get_figure()
 # figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optype.pdf', bbox_inches='tight')
 
-# %% comparison between Bayes=50 and Bayes=100 iterations
-ppt_results = results_cv.loc[results_cv.technique=='PPT'].reset_index(drop=True)
-order_optype_bo = ['GridSearch', 'RandomSearch', 'Bayes', 'BO 100', 'Halving', 'Hyperband']
-
-sns.set_style("darkgrid")
-fig, axes = plt.subplots(1, 2, figsize=(15,6.5))
-sns.boxplot(ax=axes[0], data=ppt_results, x='opt_type', y='mean_test_score',
-                 order=order_optype_bo, **PROPS)
-sns.boxplot(ax=axes[1], data=ppt_results, x='opt_type', y='time',
-                 order=order_optype_bo, **PROPS)
-sns.set(font_scale=1.5)
-axes[0].set_xlabel("")
-axes[1].set_xlabel("")
-axes[0].set_xticklabels(axes[0].get_xticklabels(), rotation=45)
-axes[1].set_xticklabels(axes[1].get_xticklabels(), rotation=45)
-axes[0].set_ylabel("Percentage difference of \n predictive performance (AUC) in CV")
-axes[1].set_ylabel("Time (min)")
-fig.suptitle("Optimization for PPT")
-# plt.show()
-# plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performanceCV_PPT.pdf', bbox_inches='tight')
-
 # %% fit time in CV
 sns.set_style("darkgrid")
 plt.figure(figsize=(15,8))
@@ -250,57 +222,20 @@ plt.show()
 # figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/timeCV_optypek2.pdf', bbox_inches='tight')
 
 # %%
-gs_to_repete = results_cv.loc[(results_cv.opt_type=='GridSearch') & (results_cv.time>5)]
-# %%
-bayes_to_repete = results_cv.loc[(results_cv.opt_type=='Bayes') & (results_cv.time>10)]
-
-# %%
-ppt_old_cv = results_cv.loc[(results_cv.opt_type=='RandomSearch') & (results_cv.technique=='PPT')]
-ppt_old_cv['choice'] = 'old'
-origCVRS_old['choice'] = 'old'
-pptCVRS['choice'] ='new'
-origCVRS['choice'] = 'new'
-ppt_old_test = results_test.loc[(results_test.opt_type=='RandomSearch') & (results_test.technique=='PPT')]
-ppt_old_test['choice'] = 'old'
-orig_testRS_old['choice'] = 'old'
-ppt_testRS['choice'] ='new'
-orig_testRS['choice'] ='new'
-ppt_cv = pd.concat([ppt_old_cv, pptCVRS, origCVRS_old, origCVRS])
-ppt_test = pd.concat([ppt_old_test, ppt_testRS, orig_testRS_old, orig_testRS])
+sns.set_style("darkgrid")
+plt.figure(figsize=(15,8))
+ax = sns.boxplot(data=results_cv, x='opt_type', y='mean_test_score')
+sns.set(font_scale=1.5)
+plt.xticks(rotation=45)
+plt.xlabel("")
+#plt.ylabel("Time (min)")
+plt.show()
 # %%
 sns.set_style("darkgrid")
-fig, axes = plt.subplots(1, 2, figsize=(15,6.5))
-sns.boxplot(ax=axes[0], data=ppt_cv, x='choice', y='mean_test_score', hue='technique')
-sns.boxplot(ax=axes[1], data=ppt_test, x='choice', y='test_roc_auc', hue='technique')
+plt.figure(figsize=(15,8))
+ax = sns.boxplot(data=results_test, x='opt_type', y='test_roc_auc')
 sns.set(font_scale=1.5)
-axes[0].set_xlabel("Results in CV")
-axes[1].set_xlabel("Results in out of sample")
-axes[0].set_xticklabels(axes[0].get_xticklabels(), rotation=45)
-axes[1].set_xticklabels(axes[1].get_xticklabels(), rotation=45)
-fig.suptitle("RandomSearch for PPT")
-
-# %%
-ppt_old_cv_ = results_cv.loc[(results_cv.opt_type=='Hyperband') & (results_cv.technique=='PPT')]
-ppt_old_cv_['choice'] = 'old'
-origCVHB_old['choice'] = 'old'
-pptCVHB['choice'] ='new'
-origCVHB['choice'] = 'new'
-ppt_old_test_ = results_test.loc[(results_test.opt_type=='Hyperband') & (results_test.technique=='PPT')]
-ppt_old_test_['choice'] = 'old'
-orig_testHB_old['choice'] = 'old'
-ppt_testHB['choice'] ='new'
-orig_testHB['choice'] ='new'
-ppt_cv_ = pd.concat([ppt_old_cv_, pptCVHB, origCVHB_old, origCVHB])
-ppt_test_ = pd.concat([ppt_old_test_, ppt_testHB, orig_testHB_old, orig_testRS])
-# %%
-sns.set_style("darkgrid")
-fig, axes = plt.subplots(1, 2, figsize=(15,6.5))
-sns.boxplot(ax=axes[0], data=ppt_cv_, x='choice', y='mean_test_score', hue='technique')
-sns.boxplot(ax=axes[1], data=ppt_test_, x='choice', y='test_roc_auc', hue='technique')
-sns.set(font_scale=1.5)
-axes[0].set_xlabel("Results in CV")
-axes[1].set_xlabel("Results in out of sample")
-axes[0].set_xticklabels(axes[0].get_xticklabels(), rotation=45)
-axes[1].set_xticklabels(axes[1].get_xticklabels(), rotation=45)
-fig.suptitle("Hyperband for PPT")
-# %%
+plt.xticks(rotation=45)
+plt.xlabel("")
+#plt.ylabel("Time (min)")
+plt.show()

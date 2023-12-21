@@ -69,13 +69,13 @@ def join_allresults(folder, technique):
 BO_folder = '../output/modelingBO/'
 deeplearnCVBO, deeplearn_testBO = join_allresults(BO_folder, 'deep_learningk2')
 pptCVBO, ppt_testBO = join_allresults(BO_folder, 'PPT_ARX')
-#privatesmoteCVBO, privatesmote_testBO = join_allresults(BO_folder, 'PrivateSMOTEk2')
+privatesmoteCVBO, privatesmote_testBO = join_allresults(BO_folder, 'PrivateSMOTEk2')
 #cityCVBO, city_testBO = join_allresults(BO_folder, 'synthcityk2')
 origCVBO, orig_testBO = join_allresults(BO_folder, 'original')
 
 # %% Hyperband
 HB_folder = '../output/modelingHB/'
-#deeplearnCVHB, deeplearn_testHB = join_allresults(HB_folder, 'deep_learningk2')
+deeplearnCVHB, deeplearn_testHB = join_allresults(HB_folder, 'deep_learningk2')
 pptCVHB, ppt_testHB = join_allresults(HB_folder, 'PPT_ARX')
 #privatesmoteCVHB, privatesmote_testHB = join_allresults(HB_folder, 'PrivateSMOTEk2')
 #cityCVHB, city_testHB = join_allresults(HB_folder, 'synthcityk2')
@@ -85,7 +85,7 @@ origCVHB, orig_testHB = join_allresults(HB_folder, 'original')
 SH_folder = '../output/modelingSH/'
 deeplearnCVSH, deeplearn_testSH = join_allresults(SH_folder, 'deep_learningk2')
 pptCVSH, ppt_testSH = join_allresults(SH_folder, 'PPT_ARX')
-#privatesmoteCVSH, privatesmote_testSH = join_allresults(SH_folder, 'PrivateSMOTEk2')
+privatesmoteCVSH, privatesmote_testSH = join_allresults(SH_folder, 'PrivateSMOTEk2')
 #cityCVSH, city_testSH = join_allresults(SH_folder, 'synthcityk2')
 origCVSH, orig_testSH = join_allresults(SH_folder, 'original')
 # %% Grid Search
@@ -104,16 +104,16 @@ pptCVRS, ppt_testRS = join_allresults(RS_folder, 'PPT_ARX')
 origCVRS, orig_testRS = join_allresults(RS_folder, 'original')
 
 # %% concat all techniques
-results_cv = pd.concat([deeplearnCVBO, deeplearnCVRS, deeplearnCVSH, deeplearnCVGS, #deeplearnCVHB,
+results_cv = pd.concat([deeplearnCVBO, deeplearnCVRS, deeplearnCVSH, deeplearnCVGS, deeplearnCVHB,
                         pptCVBO, pptCVHB, pptCVSH, pptCVGS, pptCVRS,
-                        #privatesmoteCVBO, privatesmoteCVHB, privatesmoteCVSH, privatesmoteCVRS, privatesmoteCVGS,
+                        privatesmoteCVBO, privatesmoteCVSH, #privatesmoteCVHB, privatesmoteCVRS, privatesmoteCVGS,
                         #cityCVBO, cityCVHB, cityCVGS, cityCVRS, cityCVSH
                         origCVBO, origCVHB, origCVSH, origCVGS, origCVRS,
                         ]).reset_index(drop=True)
 
-results_test = pd.concat([deeplearn_testBO, deeplearn_testRS, deeplearn_testSH, deeplearn_testGS, #deeplearn_testHB,
+results_test = pd.concat([deeplearn_testBO, deeplearn_testRS, deeplearn_testSH, deeplearn_testGS, deeplearn_testHB,
                           ppt_testBO, ppt_testHB, ppt_testSH, ppt_testGS, ppt_testRS,
-                          #privatesmote_testBO, privatesmote_testHB, privatesmote_testSH, privatesmote_testRS, privatesmote_testGS,
+                          privatesmote_testBO, privatesmote_testSH, # privatesmote_testHB, privatesmote_testRS, privatesmote_testGS,
                           #city_testBO, city_testHB, city_testGS, city_testRS, city_testSH
                           orig_testBO, orig_testHB, orig_testSH, orig_testGS, orig_testRS,
                           ]).reset_index(drop=True)
@@ -171,7 +171,7 @@ sns.set_style("darkgrid")
 plt.figure(figsize=(18,10))
 ax = sns.boxplot(data=results_cv, x='opt_type', y='roc_auc_perdif', hue='technique',
                  order=order_optype, hue_order=order_technique, palette="Set3")
-sns.set(font_scale=2)
+sns.set(font_scale=2.2)
 plt.xticks(rotation=45)
 plt.xlabel("")
 # plt.yscale('symlog')
@@ -179,21 +179,21 @@ plt.ylabel("Percentage difference of \n predictive performance (AUC) in CV")
 sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transformations', borderaxespad=0., frameon=False)
 plt.show()
 # figure = ax.get_figure()
-# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performanceCV_optypek2.pdf', bbox_inches='tight')
+# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performanceCV_optypek2_new.pdf', bbox_inches='tight')
 
 # %% ROC AUC in out of sample
 sns.set_style("darkgrid")
 plt.figure(figsize=(18,10))
 ax = sns.boxplot(data=results_test, x='opt_type', y='roc_auc_perdif', hue='technique',
                  order=order_optype, hue_order=order_technique, palette="Set3")
-sns.set(font_scale=2)
+sns.set(font_scale=2.2)
 plt.xticks(rotation=45)
 plt.xlabel("")
 plt.ylabel("Predictive performance (AUC) \n in out of sample")
 sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transformations', borderaxespad=0., frameon=False)
 plt.show()
 # figure = ax.get_figure()
-# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optype.pdf', bbox_inches='tight')
+# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optype_new.pdf', bbox_inches='tight')
 
 # %% fit time in CV
 sns.set_style("darkgrid")
@@ -219,7 +219,7 @@ plt.xlabel("")
 plt.ylabel("Time (min)")
 plt.show()
 # figure = ax.get_figure()
-# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/timeCV_optypek2.pdf', bbox_inches='tight')
+# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/timeCV_optypek2_new.pdf', bbox_inches='tight')
 
 # %%
 sns.set_style("darkgrid")
@@ -239,3 +239,5 @@ plt.xticks(rotation=45)
 plt.xlabel("")
 #plt.ylabel("Time (min)")
 plt.show()
+
+# %%

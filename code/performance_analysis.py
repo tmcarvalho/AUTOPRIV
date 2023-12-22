@@ -92,7 +92,7 @@ origCVSH, orig_testSH = join_allresults(SH_folder, 'original')
 GS_folder = '../output/modelingGS/'
 deeplearnCVGS, deeplearn_testGS = join_allresults(GS_folder, 'deep_learningk2')
 pptCVGS, ppt_testGS = join_allresults(GS_folder, 'PPT_ARX')
-#privatesmoteCVGS, privatesmote_testGS = join_allresults(GS_folder, 'PrivateSMOTEk2')
+privatesmoteCVGS, privatesmote_testGS = join_allresults(GS_folder, 'PrivateSMOTEk2')
 #cityCVGS, city_testGS = join_allresults(GS_folder, 'synthcityk2')
 origCVGS, orig_testGS = join_allresults(GS_folder, 'original')
 # %% Random Search
@@ -106,14 +106,14 @@ origCVRS, orig_testRS = join_allresults(RS_folder, 'original')
 # %% concat all techniques
 results_cv = pd.concat([deeplearnCVBO, deeplearnCVRS, deeplearnCVSH, deeplearnCVGS, deeplearnCVHB,
                         pptCVBO, pptCVHB, pptCVSH, pptCVGS, pptCVRS,
-                        privatesmoteCVBO, privatesmoteCVSH, #privatesmoteCVHB, privatesmoteCVRS, privatesmoteCVGS,
+                        privatesmoteCVBO, privatesmoteCVSH, privatesmoteCVGS, #privatesmoteCVHB, privatesmoteCVRS,
                         #cityCVBO, cityCVHB, cityCVGS, cityCVRS, cityCVSH
                         origCVBO, origCVHB, origCVSH, origCVGS, origCVRS,
                         ]).reset_index(drop=True)
 
 results_test = pd.concat([deeplearn_testBO, deeplearn_testRS, deeplearn_testSH, deeplearn_testGS, deeplearn_testHB,
                           ppt_testBO, ppt_testHB, ppt_testSH, ppt_testGS, ppt_testRS,
-                          privatesmote_testBO, privatesmote_testSH, # privatesmote_testHB, privatesmote_testRS, privatesmote_testGS,
+                          privatesmote_testBO, privatesmote_testSH, privatesmote_testGS, # privatesmote_testHB, privatesmote_testRS,
                           #city_testBO, city_testHB, city_testGS, city_testRS, city_testSH
                           orig_testBO, orig_testHB, orig_testSH, orig_testGS, orig_testRS,
                           ]).reset_index(drop=True)

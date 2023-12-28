@@ -70,14 +70,14 @@ BO_folder = '../output/modelingBO/'
 deeplearnCVBO, deeplearn_testBO = join_allresults(BO_folder, 'deep_learningk2')
 pptCVBO, ppt_testBO = join_allresults(BO_folder, 'PPT_ARX')
 privatesmoteCVBO, privatesmote_testBO = join_allresults(BO_folder, 'PrivateSMOTEk2')
-#cityCVBO, city_testBO = join_allresults(BO_folder, 'synthcityk2')
+cityCVBO, city_testBO = join_allresults(BO_folder, 'synthcityk2')
 origCVBO, orig_testBO = join_allresults(BO_folder, 'original')
 
 # %% Hyperband
 HB_folder = '../output/modelingHB/'
 deeplearnCVHB, deeplearn_testHB = join_allresults(HB_folder, 'deep_learningk2')
 pptCVHB, ppt_testHB = join_allresults(HB_folder, 'PPT_ARX')
-#privatesmoteCVHB, privatesmote_testHB = join_allresults(HB_folder, 'PrivateSMOTEk2')
+privatesmoteCVHB, privatesmote_testHB = join_allresults(HB_folder, 'PrivateSMOTEk2')
 #cityCVHB, city_testHB = join_allresults(HB_folder, 'synthcityk2')
 origCVHB, orig_testHB = join_allresults(HB_folder, 'original')
 
@@ -99,22 +99,22 @@ origCVGS, orig_testGS = join_allresults(GS_folder, 'original')
 RS_folder = '../output/modelingRS/'
 deeplearnCVRS, deeplearn_testRS = join_allresults(RS_folder, 'deep_learningk2')
 pptCVRS, ppt_testRS = join_allresults(RS_folder, 'PPT_ARX')
-#privatesmoteCVRS, privatesmote_testRS = join_allresults(RS_folder, 'PrivateSMOTEk2')
+privatesmoteCVRS, privatesmote_testRS = join_allresults(RS_folder, 'PrivateSMOTEk2')
 #cityCVRS, city_testRS = join_allresults(RS_folder, 'synthcityk2')
 origCVRS, orig_testRS = join_allresults(RS_folder, 'original')
 
 # %% concat all techniques
 results_cv = pd.concat([deeplearnCVBO, deeplearnCVRS, deeplearnCVSH, deeplearnCVGS, deeplearnCVHB,
                         pptCVBO, pptCVHB, pptCVSH, pptCVGS, pptCVRS,
-                        privatesmoteCVBO, privatesmoteCVSH, privatesmoteCVGS, #privatesmoteCVHB, privatesmoteCVRS,
-                        #cityCVBO, cityCVHB, cityCVGS, cityCVRS, cityCVSH
+                        privatesmoteCVBO, privatesmoteCVSH, privatesmoteCVGS, privatesmoteCVHB, privatesmoteCVRS,
+                        cityCVBO, #cityCVHB, cityCVGS, cityCVRS, cityCVSH,
                         origCVBO, origCVHB, origCVSH, origCVGS, origCVRS,
                         ]).reset_index(drop=True)
 
 results_test = pd.concat([deeplearn_testBO, deeplearn_testRS, deeplearn_testSH, deeplearn_testGS, deeplearn_testHB,
                           ppt_testBO, ppt_testHB, ppt_testSH, ppt_testGS, ppt_testRS,
-                          privatesmote_testBO, privatesmote_testSH, privatesmote_testGS, # privatesmote_testHB, privatesmote_testRS,
-                          #city_testBO, city_testHB, city_testGS, city_testRS, city_testSH
+                          privatesmote_testBO, privatesmote_testSH, privatesmote_testGS, privatesmote_testHB, privatesmote_testRS,
+                          city_testBO, #city_testHB, city_testGS, city_testRS, city_testSH,
                           orig_testBO, orig_testHB, orig_testSH, orig_testGS, orig_testRS,
                           ]).reset_index(drop=True)
 

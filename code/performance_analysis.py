@@ -93,28 +93,28 @@ GS_folder = '../output/modelingGS/'
 deeplearnCVGS, deeplearn_testGS = join_allresults(GS_folder, 'deep_learningk2')
 pptCVGS, ppt_testGS = join_allresults(GS_folder, 'PPT_ARX')
 privatesmoteCVGS, privatesmote_testGS = join_allresults(GS_folder, 'PrivateSMOTEk2')
-#cityCVGS, city_testGS = join_allresults(GS_folder, 'synthcityk2')
+cityCVGS, city_testGS = join_allresults(GS_folder, 'synthcityk2')
 origCVGS, orig_testGS = join_allresults(GS_folder, 'original')
 # %% Random Search
 RS_folder = '../output/modelingRS/'
 deeplearnCVRS, deeplearn_testRS = join_allresults(RS_folder, 'deep_learningk2')
 pptCVRS, ppt_testRS = join_allresults(RS_folder, 'PPT_ARX')
 privatesmoteCVRS, privatesmote_testRS = join_allresults(RS_folder, 'PrivateSMOTEk2')
-#cityCVRS, city_testRS = join_allresults(RS_folder, 'synthcityk2')
+cityCVRS, city_testRS = join_allresults(RS_folder, 'synthcityk2')
 origCVRS, orig_testRS = join_allresults(RS_folder, 'original')
 
 # %% concat all techniques
 results_cv = pd.concat([deeplearnCVBO, deeplearnCVRS, deeplearnCVSH, deeplearnCVGS, deeplearnCVHB,
                         pptCVBO, pptCVHB, pptCVSH, pptCVGS, pptCVRS,
                         privatesmoteCVBO, privatesmoteCVSH, privatesmoteCVGS, privatesmoteCVHB, privatesmoteCVRS,
-                        cityCVBO, #cityCVHB, cityCVGS, cityCVRS, cityCVSH,
+                        cityCVBO, cityCVGS, cityCVRS, #cityCVHB, cityCVSH,
                         origCVBO, origCVHB, origCVSH, origCVGS, origCVRS,
                         ]).reset_index(drop=True)
 
 results_test = pd.concat([deeplearn_testBO, deeplearn_testRS, deeplearn_testSH, deeplearn_testGS, deeplearn_testHB,
                           ppt_testBO, ppt_testHB, ppt_testSH, ppt_testGS, ppt_testRS,
                           privatesmote_testBO, privatesmote_testSH, privatesmote_testGS, privatesmote_testHB, privatesmote_testRS,
-                          city_testBO, #city_testHB, city_testGS, city_testRS, city_testSH,
+                          city_testBO, city_testGS, city_testRS, #city_testHB, city_testSH,
                           orig_testBO, orig_testHB, orig_testSH, orig_testGS, orig_testRS,
                           ]).reset_index(drop=True)
 

@@ -45,18 +45,32 @@ def modeling(file, args):
     """
     print(f'{args.input_folder}/{file}')
 
-    data = pd.read_csv(f'{args.input_folder}/{file}.csv')
+    indexes = np.load('indexes.npy', allow_pickle=True).item()
+    indexes = pd.DataFrame.from_dict(indexes)
 
-    # extract the same 80% of the original data
-    if len(file) <= 6:
-        indexes = np.load('indexes.npy', allow_pickle=True).item()
-        indexes = pd.DataFrame.from_dict(indexes)
+    f = list(map(int, re.findall(r'\d+', file.split('_')[0])))
+    index = indexes.loc[indexes['ds']==str(f[0]), 'indexes'].values[0]
 
-        index = indexes.loc[indexes['ds']==file, 'indexes'].values[0]
-        
+    orig_folder = 'original'
+    _, _, orig_files = next(os.walk(f'{orig_folder}'))
+    orig_file = [fl for fl in orig_files if list(map(int, re.findall(r'\d+', fl.split('.')[0])))[0] == f[0]]
+    print(orig_file)
+    orig_data = pd.read_csv(f'{orig_folder}/{orig_file[0]}')
+    data = pd.read_csv(f'{args.input_folder}/{file}')
+
+    if args.type == 'original':
         data_idx = list(set(list(data.index)) - set(index))
-        data = data.iloc[data_idx, :]
+        data = orig_data.iloc[data_idx, :]
         print(data.shape)
+
+    # if f[0] == 37: # because SDV models returns real states instead of numbers as in the original data
+    #     data.rename(columns = {'state':'code_number','phone_number':'number', 'voice_mail_plan':'voice_plan'}, inplace = True)
+    
+    # if f[0] == 55:
+    #     data.rename(columns = {'state':'code_number'}, inplace = True) 
+
+    # prepare data to modeling
+    orig_data = orig_data.apply(LabelEncoder().fit_transform)
     data = data.apply(LabelEncoder().fit_transform)
 
     # prepare data to modeling
@@ -65,8 +79,8 @@ def modeling(file, args):
     else:
         x_train, y_train = data.iloc[:, :-1], data.iloc[:, -1]
 
-    # Split the training data into a training set and a validation set for early stop in XGBClassifier
-    x_train, x_test, y_train, y_test = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
+    x_test = orig_data.iloc[index, :-1]
+    y_test = orig_data.iloc[index, -1]
 
     try:
         if args.opt == 'BO':

@@ -8,6 +8,7 @@ import pika
 
 parser = argparse.ArgumentParser(description='Master Example')
 parser.add_argument('--input_folder', type=str, help='Input folder', default="./input")
+parser.add_argument('--type', type=str, help='Technique', default="None")
 args = parser.parse_args()
 
 
@@ -39,42 +40,55 @@ dl_queue = channel.queue_declare(queue='dl')
 
 channel.queue_bind(exchange='dlx', routing_key='task_queue_transf', queue=dl_queue.method.queue)
 
-epochs=[100, 200]
-batch_size=[50, 100]
+files = next(os.walk(args.input_folder))[2]
 
-files = files = next(os.walk(args.input_folder))[2]
-# SDV
-# for file in files:
-#     f = int(file.split('.')[0])
-#     if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87, 100,43]:
-#         print(file)
-#         for technique in ['CTGAN', 'CopulaGAN', 'TVAE']:
-#             for idx in range(3):
-#                 for ep in epochs:
-#                     for bs in batch_size:
-#                         print(f'ds{file.split(".")[0]}_{technique}_QI{idx}_ep{ep}_bs{bs}')
-#                         put_file_queue(channel, f'ds{file.split(".")[0]}_{technique}_QI{idx}_ep{ep}_bs{bs}')
+if args.type == 'PrivateSMOTE':
+    knn = [1,3,5]
+    per = [1,2,3]
+    epislon = [0.1, 0.5, 1.0, 5.0, 10.0]
 
-# SYNTHCITY
-n_iter=[100, 200]
-batch_size_=[50, 100]
-epsilon=[0.1, 0.25, 0.5, 0.75, 1.0]
+    for file in files:
+        f = int(file.split('.csv')[0])
+        if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87, 100,43]:
+        # if f in [37]:
+            print(file)
+            for idx in range(5):
+                for k in knn:
+                    for p in per:
+                        for ep in epislon:
+                            print(f'ds{file.split(".")[0]}_{ep}-privateSMOTE_QI{idx}_knn{k}_per{p}')
+                            put_file_queue(channel, f'ds{file.split(".")[0]}_{ep}-privateSMOTE_QI{idx}_knn{k}_per{p}')   
 
-for file in files:
-    f = int(file.split('.')[0])
-    if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87, 100,43]:
-        print(file)
-        # for technique in ['dpgan', 'pategan']:
-        #     for idx in range(3):
-        #         for epo in n_iter:
-        #             for bs in batch_size_:
-        #                 for epi in epsilon:
-        #                     print(f'ds{file.split(".")[0]}_{technique}_QI{idx}_epo{epo}_bs{bs}_epi{epi}')
-        #                     put_file_queue(channel, f'ds{file.split(".")[0]}_{technique}_QI{idx}_epo{epo}_bs{bs}_epi{epi}')
+if args.type == 'SDV':
+    epochs=[100, 200]
+    batch_size=[50, 100]
 
-        for idx in range(3):
-            for epi in epsilon:
-                print(f'ds{file.split(".")[0]}_privbayes_QI{idx}_epi{epi}')
-                put_file_queue(channel, f'ds{file.split(".")[0]}_privbayes_QI{idx}_epi{epi}')
+    for file in files:
+        f = int(file.split('.csv')[0])
+        if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87, 100,43]:
+            print(file)
+            for technique in ['CTGAN', 'CopulaGAN', 'TVAE']:
+                for idx in range(5):
+                    for ep in epochs:
+                        for bs in batch_size:
+                            print(f'ds{file.split(".")[0]}_{technique}_QI{idx}_ep{ep}_bs{bs}')
+                            put_file_queue(channel, f'ds{file.split(".")[0]}_{technique}_QI{idx}_ep{ep}_bs{bs}')
+
+if args.type == 'Synthcity':
+    n_iter=[100, 200]
+    batch_size_=[50, 100]
+    epsilon=[0.1, 0.5, 1.0, 5.0]
+
+    for file in files:
+        f = int(file.split('.csv')[0])
+        if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87, 100,43]:
+            print(file)
+            for technique in ['dpgan', 'pategan']:
+                for idx in range(5):
+                    for epo in n_iter:
+                        for bs in batch_size_:
+                            for epi in epsilon:
+                                print(f'ds{file.split(".")[0]}_{technique}_QI{idx}_epo{epo}_bs{bs}_epi{epi}')
+                                put_file_queue(channel, f'ds{file.split(".")[0]}_{technique}_QI{idx}_epo{epo}_bs{bs}_epi{epi}')
 
 connection.close()

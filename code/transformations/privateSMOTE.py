@@ -2,232 +2,269 @@
 This script will apply SMOTE technique in the single out cases.
 """
 # %%
-from os import sep, walk
+# Import necessary libraries
+from os import sep
 import re
-import ast
 import pandas as pd
 import numpy as np
-import random
 from sklearn.neighbors import NearestNeighbors
-from sklearn.preprocessing import StandardScaler
-import random
-from random import randrange
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+import argparse
 
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description='Master Example')
+parser.add_argument('--input_file', type=str, default="none")
+parser.add_argument('--key_vars', type=str, default="none")
+args = parser.parse_args()
 
 def keep_numbers(data):
-    """mantain correct data types according to the data"""
-    data_types = data.copy()
+    """Fix data types according to the data"""
     for col in data.columns:
-        # transform strings to digits
+        # Transform numerical strings to digits
         if isinstance(data[col].iloc[0], str) and data[col].iloc[0].isdigit():
             data[col] = data[col].astype(float)
-        # remove trailing zeros
+        # Remove trailing zeros
         if isinstance(data[col].iloc[0], (int, float)):
             if int(data[col].iloc[0]) == float(data[col].iloc[0]):
                 data[col] = data[col].astype(int)
-            else: data[col] = data_types[col].astype(float)
-    return data, data_types
-
+    return data
 
 def aux_singleouts(key_vars, dt):
-    """create single out variable based on k-anonymity"""
+    """Create single out variable based on k-anonymity"""
     k = dt.groupby(key_vars)[key_vars[0]].transform(len)
-    dt['single_out'] = np.where(k < 2 , 1, 0)
+    dt['single_out'] = np.where(k < 3, 1, 0)
     return dt
 
-class Smote:
-    """Apply Smote
-    """
-    def __init__(self, samples, N, k, ep):
-        """Initiate arguments
+def check_and_adjust_data_types(origDF, newDf):
+    for col in newDf.columns[:-2]:
+        if origDF[col].dtype == np.int64:
+            newDf[col] = round(newDf[col], 0).astype(int)
+        elif origDF[col].dtype == np.float64:
+            # Handle trailing values for float columns
+            dec = str(origDF[col].values[0])[::-1].find('.')
+            newDf[col] = round(newDf[col], int(dec))
+    return newDf
 
-        Args:
-            data (pd.Dataframe): all data
-            y (pd.Series): target sample
-            N (int): number of interpolations per observation
-            k (int): number of nearest neighbours
-            ep (float): privacy budget (epsilon)
-        """
+class PrivateSMOTE:
+    """Apply PrivateSMOTE"""
+    def __init__(self, samples, N, k, ep):
+        """Initiate arguments"""
         self.samples = samples.reset_index(drop=True)
-        self.N = N
+        self.N = int(N)
         self.k = k
         self.ep = ep
-        self.newindex=0
+        self.newindex = 0
 
-        # singleout samples that will be replaced
-        self.X_train = self.samples.loc[self.samples['single_out']==1, self.samples.columns[:-2]]
-        # target variable values
-        self.y = self.samples.loc[:, self.samples.columns[-2]]
-        # drop singlout and target variables to knn
-        self.data_knn = self.samples.loc[:, self.samples.columns[:-2]]
-        # nr of samples and attributs to synthetize
-        self.n_samples = self.X_train.shape[0]
-        self.n_attrs = self.X_train.shape[1]
-        # transform singleout samples in ndarray with the same dtypes
-        self.x = np.array(self.data_knn, dtype=self.data_knn.dtypes)
+        # Single out samples that will be replaced
+        self.X_train_shape = self.samples.loc[self.samples['single_out'] == 1, self.samples.columns[:-2]].shape
+        print("n singleouts: ", self.X_train_shape)
+        # Target variable values
+        self.y = np.array(self.samples.loc[:, self.samples.columns[-2]])
+
+        # Initialize the synthetic samples with the number of samples and attributes
+        self.synthetic = np.empty(shape=(self.X_train_shape[0] * N, self.X_train_shape[1] + 1), dtype='float32')
+
+        # Create CuPy vector with bool values, where true corresponds to object dtype
+        self.is_object_type = np.array(self.samples[self.samples.columns[:-2]].dtypes == 'object')
+
+        print(set(self.samples[self.samples.columns[:-2]].dtypes))
+
+
+    def enc_data(self):
+        if np.any(self.is_object_type):
+            self.label_encoders = {}
+            self.label_encoder = LabelEncoder()
+            enc_samples = self.samples.loc[:,self.samples.columns[:-2]].copy()
+
+            # Get the column names that are of object type
+            self.object_columns = enc_samples.columns[self.is_object_type]
+            self.unique_values = {}
+            
+            # One-hot encode categorical columns for knn
+            dummie_data = np.array(pd.get_dummies(enc_samples, drop_first=True))
+            self.neighbors = self.nearest_neighbours(dummie_data)
+
+            # Label encode the object-type columns
+            enc_samples = np.array(self.encode_categorical_columns(enc_samples))
+
+            return enc_samples
+        
+        else:
+            # Drop singlout and target variables to knn
+            self.neighbors = self.nearest_neighbours(np.array(self.samples.loc[:, self.samples.columns[:-2]]))
+            return np.array(self.samples.loc[:, self.samples.columns[:-2]])
+
+    def encode_categorical_columns(self, data):
+        for col in self.object_columns:
+            label_encoder = LabelEncoder()
+            data[col] = np.array(label_encoder.fit_transform(data[col]))
+            self.label_encoders[col] = label_encoder
+            self.unique_values[col] = np.unique(data[col])
+        return data
+
+    def decode_categorical_columns(self, encoded_data):
+        # Inverse transform the column
+        for col_name in self.object_columns:
+            encoded_data[col_name] = self.label_encoders[col_name].inverse_transform(encoded_data[col_name].astype(int))
+        return encoded_data
     
+    def nearest_neighbours(self, data):
+        # Standardize the data
+        self.standardized_data = StandardScaler().fit_transform(data)
+        nearestn = NearestNeighbors(n_neighbors=self.k + 1).fit(self.standardized_data)
+        return nearestn
 
     def over_sampling(self):
-        """find the nearest neighbors and populate with new data
-
-        Returns:
-            pd.DataFrame: synthetic data
-        """
+        """Find the nearest neighbors and populate with new data"""
         N = int(self.N)
+        self.x = self.enc_data()
+        # Find the minimum value for each numerical column
+        self.min_values = [self.x[:, i].min() if not self.is_object_type[i] else np.nan for i in range(self.x.shape[1])]
+        # Find the maximum value for each numerical column
+        self.max_values = [self.x[:, i].max() if not self.is_object_type[i] else np.nan for i in range(self.x.shape[1])]
+        # Find the standard deviation value for each numerical column
+        self.std_values = [np.std(self.x[:, i]) if not self.is_object_type[i] else np.nan for i in range(self.x.shape[1])]
 
-        # OHE + standardization for nearest neighbor using all data
-        encoded_data = pd.get_dummies(self.data_knn, drop_first=True).astype(int)
-        standardized_data = StandardScaler().fit_transform(encoded_data)
-        neighbors = NearestNeighbors(n_neighbors=self.k+1).fit(standardized_data)
+        # Get the indices of observations that need oversampling
+        single_out_indices = self.samples.loc[self.samples['single_out'] == 1, self.samples.columns[:-2]].index
 
-        # transform the tager in 1D-array
-        self.y = np.array(self.y)
-
-        # inicialize the synthetic samples
-        self.synthetic = np.empty(shape=(self.n_samples * N, self.n_attrs+1), dtype=self.samples.dtypes)
-        
-        # find the categories for each categorical column in all sample
-        self.unique_values = [self.data_knn.loc[:,col].unique() for col in self.data_knn.select_dtypes(object)]
-
-        # find the minimun value for each numerical column
-        self.min_values = [self.data_knn[col].min() if not isinstance(self.data_knn[col].iloc[0], str) else np.nan for col in self.data_knn.columns]
-
-        # find the maximum value for each numerical column
-        self.max_values = [self.data_knn[col].max() if not isinstance(self.data_knn[col].iloc[0], str) else np.nan for col in self.data_knn.columns]
-
-        # find the standard deviation value for each numerical column
-        self.std_values = [np.std(self.data_knn[col]) if not isinstance(self.data_knn[col].iloc[0], str) else np.nan for col in self.data_knn.columns]
-        
-        # for each observation find nearest neighbours
-        for i, _ in enumerate(standardized_data):
-            if i in self.X_train.index:
-                # print(i)
-                nnarray = neighbors.kneighbors(
-                    standardized_data[i].reshape(1, -1), return_distance=False)[0]
+        # For each observation find nearest neighbours
+        for i, _ in enumerate(self.standardized_data):
+            if i in single_out_indices:
+                nnarray = self.neighbors.kneighbors(self.standardized_data[i].reshape(1, -1),
+                                               return_distance=False)[0]
+                
                 self._populate(N, i, nnarray)
-        return self.synthetic
+
+        self.synthetic = self.synthetic
+
+        # Convert synthetic data back to a Pandas DataFrame
+        new = pd.DataFrame(self.synthetic, columns=self.samples.columns[:-1])
+        new = new.astype(dtype=self.samples[self.samples.columns[:-1]].dtypes)
+        if np.any(self.is_object_type):
+            new = self.decode_categorical_columns(new)
+        return new
 
     def _populate(self, N, i, nnarray):
-        # populate N times
-        while N!=0:
-            # find index of nearest neighbour excluding the observation in comparison
-            neighbour = randrange(1, self.k+1)
+        # Populate N times
+        while N != 0:
+            # Find index of nearest neighbour excluding the observation in comparison
+            neighbour = np.random.randint(1, self.k + 1)
 
-            control_flip = [(np.multiply(random.choice([-1, 1]), np.random.laplace(0, 1/self.ep, size=None)) if (isinstance(orig_val, (int, float))) \
-                                      else orig_val) \
-                                    for (neighbor_val, orig_val) in zip(self.x[nnarray[neighbour]], self.x[i])]
+            # Control flip (with standard deviation) for equal neighbor and original values 
+            flip = [np.multiply(np.multiply(
+                            np.random.choice([-1, 1], size=1), std),
+                            np.random.laplace(0, 1 / self.ep, size=None))
+                            if not np.isnan(std)
+                            else orig_val
+                            for std, orig_val in zip(self.std_values, self.x[i])]
 
-            # control noise at tails
-            control_noise = [(np.multiply(neighbor_val-orig_val, np.random.laplace(0, 1/self.ep, size=None)) if (isinstance(orig_val, (int, float))) \
-                                      else orig_val) \
-                                    for (neighbor_val, orig_val) in zip(self.x[nnarray[neighbour]], self.x[i])]
+            # Without flip when neighbour is different from original
+            noise = [np.multiply(
+                            neighbor_val - orig_val,
+                            np.random.laplace(0, 1 / self.ep, size=None))
+                            if not np.isnan(self.min_values[j])
+                            else orig_val
+                            for j, (neighbor_val, orig_val) in enumerate(zip(self.x[nnarray[neighbour]], self.x[i]))]
 
-            # generate new numerical value for each column
-            new_nums_values = [(orig_val + np.multiply(self.std_values[j],control_flip[j])) if (neighbor_val==orig_val and isinstance(orig_val, (int, float)) and (self.min_values[j] <= orig_val + np.multiply(self.std_values[j],control_flip[j]) <= self.max_values[j])) \
-                               else (orig_val - np.multiply(self.std_values[j],control_flip[j])) if ((neighbor_val==orig_val) and isinstance(orig_val, (int, float)) and ((self.min_values[j] > orig_val + np.multiply(self.std_values[j],control_flip[j])) or (orig_val + np.multiply(self.std_values[j],control_flip[j]) > self.max_values[j]))) \
-                                   else (orig_val + control_noise[j]) if (neighbor_val!=orig_val and isinstance(orig_val, (int, float)) and (self.min_values[j] <= orig_val + control_noise[j] <= self.max_values[j])) \
-                                      else (orig_val - control_noise[j]) if (neighbor_val!=orig_val and isinstance(orig_val, (int, float)) and (self.min_values[j] > orig_val + control_noise[j] > self.max_values[j])) \
-                                      else orig_val \
-                                    for j, (neighbor_val, orig_val) in enumerate(zip(self.x[nnarray[neighbour]], self.x[i]))]
+            # Generate new numerical value for each column
+            new_nums_values = [orig_val + flip[j]
+                    if neighbor_val == orig_val 
+                    and not np.isnan(self.min_values[j]) 
+                    and self.min_values[j] <= orig_val + flip[j] <= self.max_values[j]
+                    else orig_val - flip[j]
+                    if neighbor_val == orig_val and not np.isnan(self.min_values[j]) 
+                    and (self.min_values[j] > orig_val + flip[j]
+                    or orig_val + flip[j] > self.max_values[j])
+                    else orig_val + noise[j]
+                    if neighbor_val != orig_val and not np.isnan(self.min_values[j])
+                    and self.min_values[j] <= orig_val + noise[j] <= self.max_values[j]
+                    else orig_val - noise[j]
+                    if neighbor_val != orig_val and not np.isnan(self.min_values[j])
+                    and (self.min_values[j] > orig_val + noise[j] > self.max_values[j])
+                    else orig_val
+                    for j, (neighbor_val, orig_val) in enumerate(zip(self.x[nnarray[neighbour]], self.x[i]))]
 
-            if len(self.unique_values) > 0:
-                # find the categories for each categorical column in nearest neighbors sample
-                nn_unique = [self.samples.loc[nnarray[1:self.k+1],col].unique() for col in self.data_knn.select_dtypes(object)]
+            # Replace the old categories if there are categorical columns
+            if np.any(self.is_object_type):
+                nn_unique = [np.unique(self.x[nnarray[1 : self.k + 1], col]) 
+                            for col in np.where(self.is_object_type)[0]]
+                
+                # randomly select a category from all existent categories if there is just one category in nn_unique else select from nn_unique
+                new_cats_values = [np.random.choice(list(self.unique_values.values())[u], size=1) if len(nn_unique[u]) == 1 else np.random.choice(nn_unique[u], size=1) for u in range(len(self.unique_values))]
 
-                # randomly select a category
-                new_cats_values = [random.choice(self.unique_values[u]) if len(nn_unique[u]) == 1 else random.choice(nn_unique[u]) for u in range(len(self.unique_values))]
-        
                 # replace the old categories
-                iter_cat_calues = iter(new_cats_values)
-                new_nums_values = [next(iter_cat_calues) if isinstance(val, str) else val for val in new_nums_values]
-            
-            # assign interpolated values
-            self.synthetic[self.newindex, 0:len(new_nums_values)] = new_nums_values
+                iter_cat_values = iter(new_cats_values)
 
-            # assign intact target variable
-            self.synthetic[self.newindex, len(new_nums_values)] = self.y[i]
-            self.newindex+=1
+                new_nums_values = [next(iter_cat_values) if np.isnan(self.min_values[j]) else val for j, val in enumerate(new_nums_values)]
 
-            N-=1
+
+            # Concatenate the arrays along axis=0
+            synthetic_array = np.hstack(new_nums_values)
+                    
+            # Assign interpolated values
+            self.synthetic[self.newindex, 0 : synthetic_array.shape[0]] = synthetic_array
+
+            # Assign intact target variable
+            self.synthetic[self.newindex, synthetic_array.shape[0]] = self.y[i]
+            self.newindex += 1
+            N -= 1
+
 
 # %% 
-
-def PrivateSMOTE_force_laplace_(msg):
+def PrivateSMOTE_force_laplace_(input_file, keys):
     """Generate several interpolated data sets considering all classes.
 
     Args:
         msg (str): name of the original file and respective PrivateSMOTE parameters
     """
-    print(msg)
+    print(input_file)
 
-    output_interpolation_folder = '../../data/PrivateSMOTEk2'
+    output_interpolation_folder = 'output/oversampled/PrivateSMOTE'
     
     # get 80% of data to synthesise
-    indexes = np.load('../../indexes.npy', allow_pickle=True).item()
+    indexes = np.load('indexes.npy', allow_pickle=True).item()
     indexes = pd.DataFrame.from_dict(indexes)
 
-    f = list(map(int, re.findall(r'\d+', msg.split('_')[0])))
+    f = list(map(int, re.findall(r'\d+', input_file.split('_')[0])))
     print(str(f[0]))
-    data = pd.read_csv(f'../../data/original/{str(f[0])}.csv')
+    data = pd.read_csv(f'original/{str(f[0])}.csv')
 
     index = indexes.loc[indexes['ds']==str(f[0]), 'indexes'].values[0]
     data_idx = list(set(list(data.index)) - set(index))
     data = data.iloc[data_idx, :]
 
     # encode string with numbers to numeric and remove trailing zeros
-    data, data_types = keep_numbers(data)
-    
-    list_key_vars = pd.read_csv('../../list_key_vars.csv')
-    set_key_vars = ast.literal_eval(
-        list_key_vars.loc[list_key_vars['ds']==f[0], 'set_key_vars'].values[0])
+    data = keep_numbers(data)
 
-    keys_nr = list(map(int, re.findall(r'\d+', msg.split('_')[2])))[0]
-    print(keys_nr)
-    keys = set_key_vars[keys_nr]
+    # print(data.shape)
+    keys_list = keys.split(',')
+    data = aux_singleouts(keys_list, data)
 
-    data = aux_singleouts(keys, data)
+    # encoded target
+    tgt_obj = data[data.columns[-2]].dtypes == 'object'
+    if tgt_obj:
+        target_encoder = LabelEncoder()
+        data[data.columns[-2]] = target_encoder.fit_transform(data[data.columns[-2]]) 
 
-    knn = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
-    per = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
-    ep = 5
+    knn = list(map(int, re.findall(r'\d+', input_file.split('_')[3])))[0]
+    per = list(map(int, re.findall(r'\d+', input_file.split('_')[4])))[0]
+    ep = list(map(float, re.findall(r'\d+\.\d+', input_file.split('_')[1])))[0]
 
-    new = Smote(data, per, knn, ep).over_sampling()
-    
-    newDf = pd.DataFrame(new, columns = data.columns[:-1])
-    newDf = newDf.astype(dtype = data[data.columns[:-1]].dtypes)
-    # assign singleout
-    newDf['single_out'] = 1
+    newDf = PrivateSMOTE(data, per, knn, ep).over_sampling()
 
-    # add non single outs
+    # Convert synthetic data back to a Pandas DataFrame
+    newDf = pd.concat([newDf, pd.DataFrame({'single_out': [1] * newDf.shape[0]})], axis=1)
     if newDf.shape[0] != data.shape[0]:
-        newDf = pd.concat([newDf, data.loc[data['single_out']==0]])
+        newDf = pd.concat([newDf, data.loc[data['single_out'] == 0]])
 
-    for col in newDf.columns[:-1]:
-        if data_types[col].dtype == np.int64:
-            newDf[col] = round(newDf[col], 0).astype(int)
-        if data_types[col].dtype == np.float64:
-            # get decimal places in float
-            dec = str(data[col].values[0])[::-1].find('.')
-            newDf[col] = round(newDf[col], dec)
+    if tgt_obj:
+         newDf[newDf.columns[-2]] = target_encoder.inverse_transform(newDf[newDf.columns[-2]])
 
-    # save oversampled data
-    newDf.to_csv(
-        f'{output_interpolation_folder}{sep}{msg}.csv',
-        index=False)
 
-# %%
-original_folder = '../../data/original'
-_, _, input_files = next(walk(f'{original_folder}'))
+    # Check and adjust data types and trailing values
+    newDf = check_and_adjust_data_types(data, newDf)
+    
+    newDf.to_csv(f'{output_interpolation_folder}{sep}{input_file}.csv', index=False)
 
-not_considered_files = [0,1,3,13,23,28,34,36,40,48,54,66,87, 100,43]
-
-knn = [1,3,5]
-per = [1,2,3]
-
-for idx,file in enumerate(input_files):
-    if int(file.split(".csv")[0]) not in not_considered_files:
-        for idx in range(3):
-            for k in knn:
-                for p in per:
-                    PrivateSMOTE_force_laplace_(f'ds{file.split(".")[0]}_privateSMOTE_QI{idx}_knn{k}_per{p}')
-# %%
+PrivateSMOTE_force_laplace_(args.input_file, args.key_vars)

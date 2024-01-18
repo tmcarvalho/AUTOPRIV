@@ -14,7 +14,7 @@ from city import synth_city
 
 #%%
 parser = argparse.ArgumentParser(description='Master Example')
-parser.add_argument('--type', type=str, help='PrivateSMOTE type', default="none")
+parser.add_argument('--type', type=str, help='technique type', default="none")
 parser.add_argument('--id', type=str, help='GPU device id', default="none")
 args = parser.parse_args()
 
@@ -87,6 +87,6 @@ connection.close()
 
 
 # find . -name ".DS_Store" -delete
-# python3 code/transformations/task_transf.py  --input_folder "data/original" 
+# python3 code/transformations/task_transf.py  --input_folder "data/original" --type "Synthcity"
 # python3 code/transformations/worker_transf.py --type "deep_learning" --id "0"
 # python3 code/transformations/worker_transf.py --type "synthcity" --id "0"

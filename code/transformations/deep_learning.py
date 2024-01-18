@@ -12,7 +12,7 @@ from numba import jit, cuda
 def aux_singleouts(key_vars, dt):
     """create single out variable based on k-anonymity"""
     k = dt.groupby(key_vars)[key_vars[0]].transform(len)
-    dt['single_out'] = np.where(k < 2 , 1, 0)
+    dt['single_out'] = np.where(k < 3 , 1, 0)
     return dt
 
 
@@ -27,7 +27,7 @@ def synth(msg, args):
     """
     cuda.select_device(int(args.id))
     print(msg)
-    output_interpolation_folder = 'data/deep_learningk2/'
+    output_interpolation_folder = 'data/deep_learning/'
     if msg.split('_')[0] not in ['ds100', 'ds43']:
         f = list(map(int, re.findall(r'\d+', msg.split('_')[0])))
         print(str(f[0]))
@@ -51,7 +51,14 @@ def synth(msg, args):
         keys_nr = list(map(int, re.findall(r'\d+', msg.split('_')[2])))[0]
         print(keys_nr)
         keys = set_key_vars[keys_nr]
+        if f[0] == 37: # because list of key vars have the original names (before the change due to SDV)
+            keys[keys.index("code_number")] = "state"
+            keys[keys.index("phone_number")] = "number"
+            keys[keys.index("voice_mail_plan")] = "voice_plan"
 
+        if f[0] == 55:
+            keys[keys.index("code_number")] = "state"
+        print(keys)
         data = aux_singleouts(keys, data)
         protected_data = data.loc[data['single_out'] == 0].reset_index(drop=True)
         unprotected_data = data.loc[data['single_out'] == 1].reset_index(drop=True)

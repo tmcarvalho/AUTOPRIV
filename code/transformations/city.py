@@ -53,12 +53,13 @@ def synth_city(msg, args):
     
     keys_nr = list(map(int, re.findall(r'\d+', msg.split('_')[2])))[0]
     keys = set_key_vars[keys_nr]
-    if f[0] == 37: # because list of key vars have the original names (before the change due to SDV)
+    if (f[0] == 37) and ('code_number' in keys): # because list of key vars have the original names (before the change due to SDV)
         keys[keys.index("code_number")] = "state"
+    if (f[0] == 37) and ('phone_number' in keys):
         keys[keys.index("phone_number")] = "number"
+    if (f[0] == 37) and ('voice_mail_plan' in keys):
         keys[keys.index("voice_mail_plan")] = "voice_plan"
-
-    if f[0] == 55:
+    if (f[0] == 55) and ('code_number' in keys):
         keys[keys.index("code_number")] = "state"
     print(keys)
     data = aux_singleouts(keys, data)

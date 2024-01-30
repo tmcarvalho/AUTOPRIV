@@ -25,18 +25,17 @@ def join_allresults(folder, technique):
             best_cv = result_cv_train.iloc[[result_cv_train['mean_test_score'].idxmax()]]
             # use the best model in CV to get the results of it in out of sample
             best_test = result_test.iloc[best_cv.index,:]
-            # TODO: validate models in best_test and best_cv 
             # add optimzation type to the train results
             best_cv['opt_type'] = result_test['opt_type']
 
             # get technique
-            if technique=='deep_learningk2':
+            if technique=='deep_learning':
                 best_cv['technique'] = file.split('_')[1]
                 best_test['technique'] = file.split('_')[1]
-            elif technique=='synthcityk2':
+            elif technique=='synthcity':
                 best_cv['technique'] = file.split('_')[1].upper()
                 best_test['technique'] = file.split('_')[1].upper()
-            elif technique == 'PrivateSMOTEk2':
+            elif technique == 'PrivateSMOTE':
                 best_cv['technique'] = r'$\epsilon$-PrivateSMOTE'
                 best_test['technique'] = r'$\epsilon$-PrivateSMOTE'
             else:
@@ -67,54 +66,54 @@ def join_allresults(folder, technique):
 
 # %% Baeys optimization
 BO_folder = '../output/modelingBO/'
-deeplearnCVBO, deeplearn_testBO = join_allresults(BO_folder, 'deep_learningk2')
-pptCVBO, ppt_testBO = join_allresults(BO_folder, 'PPT_ARX')
-privatesmoteCVBO, privatesmote_testBO = join_allresults(BO_folder, 'PrivateSMOTEk2')
-cityCVBO, city_testBO = join_allresults(BO_folder, 'synthcityk2')
+deeplearnCVBO, deeplearn_testBO = join_allresults(BO_folder, 'deep_learning')
+# pptCVBO, ppt_testBO = join_allresults(BO_folder, 'PPT_ARX')
+#privatesmoteCVBO, privatesmote_testBO = join_allresults(BO_folder, 'PrivateSMOTE')
+#cityCVBO, city_testBO = join_allresults(BO_folder, 'synthcity')
 origCVBO, orig_testBO = join_allresults(BO_folder, 'original')
 
 # %% Hyperband
 HB_folder = '../output/modelingHB/'
-deeplearnCVHB, deeplearn_testHB = join_allresults(HB_folder, 'deep_learningk2')
-pptCVHB, ppt_testHB = join_allresults(HB_folder, 'PPT_ARX')
-privatesmoteCVHB, privatesmote_testHB = join_allresults(HB_folder, 'PrivateSMOTEk2')
-#cityCVHB, city_testHB = join_allresults(HB_folder, 'synthcityk2')
+deeplearnCVHB, deeplearn_testHB = join_allresults(HB_folder, 'deep_learning')
+#pptCVHB, ppt_testHB = join_allresults(HB_folder, 'PPT_ARX')
+#privatesmoteCVHB, privatesmote_testHB = join_allresults(HB_folder, 'PrivateSMOTE')
+#cityCVHB, city_testHB = join_allresults(HB_folder, 'synthcity')
 origCVHB, orig_testHB = join_allresults(HB_folder, 'original')
 
 # %% Sussessive Halving
 SH_folder = '../output/modelingSH/'
-deeplearnCVSH, deeplearn_testSH = join_allresults(SH_folder, 'deep_learningk2')
-pptCVSH, ppt_testSH = join_allresults(SH_folder, 'PPT_ARX')
-privatesmoteCVSH, privatesmote_testSH = join_allresults(SH_folder, 'PrivateSMOTEk2')
-#cityCVSH, city_testSH = join_allresults(SH_folder, 'synthcityk2')
+deeplearnCVSH, deeplearn_testSH = join_allresults(SH_folder, 'deep_learning')
+#pptCVSH, ppt_testSH = join_allresults(SH_folder, 'PPT_ARX')
+#privatesmoteCVSH, privatesmote_testSH = join_allresults(SH_folder, 'PrivateSMOTE')
+#cityCVSH, city_testSH = join_allresults(SH_folder, 'synthcity')
 origCVSH, orig_testSH = join_allresults(SH_folder, 'original')
 # %% Grid Search
 GS_folder = '../output/modelingGS/'
-deeplearnCVGS, deeplearn_testGS = join_allresults(GS_folder, 'deep_learningk2')
-pptCVGS, ppt_testGS = join_allresults(GS_folder, 'PPT_ARX')
-privatesmoteCVGS, privatesmote_testGS = join_allresults(GS_folder, 'PrivateSMOTEk2')
-cityCVGS, city_testGS = join_allresults(GS_folder, 'synthcityk2')
+deeplearnCVGS, deeplearn_testGS = join_allresults(GS_folder, 'deep_learning')
+#pptCVGS, ppt_testGS = join_allresults(GS_folder, 'PPT_ARX')
+#privatesmoteCVGS, privatesmote_testGS = join_allresults(GS_folder, 'PrivateSMOTE')
+#cityCVGS, city_testGS = join_allresults(GS_folder, 'synthcity')
 origCVGS, orig_testGS = join_allresults(GS_folder, 'original')
 # %% Random Search
 RS_folder = '../output/modelingRS/'
-deeplearnCVRS, deeplearn_testRS = join_allresults(RS_folder, 'deep_learningk2')
-pptCVRS, ppt_testRS = join_allresults(RS_folder, 'PPT_ARX')
-privatesmoteCVRS, privatesmote_testRS = join_allresults(RS_folder, 'PrivateSMOTEk2')
-cityCVRS, city_testRS = join_allresults(RS_folder, 'synthcityk2')
+deeplearnCVRS, deeplearn_testRS = join_allresults(RS_folder, 'deep_learning')
+#pptCVRS, ppt_testRS = join_allresults(RS_folder, 'PPT_ARX')
+privatesmoteCVRS, privatesmote_testRS = join_allresults(RS_folder, 'PrivateSMOTE')
+#cityCVRS, city_testRS = join_allresults(RS_folder, 'synthcity')
 origCVRS, orig_testRS = join_allresults(RS_folder, 'original')
 
 # %% concat all techniques
-results_cv = pd.concat([deeplearnCVBO, deeplearnCVRS, deeplearnCVSH, deeplearnCVGS, deeplearnCVHB,
-                        pptCVBO, pptCVHB, pptCVSH, pptCVGS, pptCVRS,
-                        privatesmoteCVBO, privatesmoteCVSH, privatesmoteCVGS, privatesmoteCVHB, privatesmoteCVRS,
-                        cityCVBO, cityCVGS, cityCVRS, #cityCVHB, cityCVSH,
+results_cv = pd.concat([deeplearnCVBO, deeplearnCVGS, deeplearnCVRS, deeplearnCVSH, deeplearnCVHB,
+                        #pptCVBO, pptCVHB, pptCVSH, pptCVGS, pptCVRS,
+                        privatesmoteCVRS, #privatesmoteCVBO, privatesmoteCVSH, privatesmoteCVGS, privatesmoteCVHB,
+                        #cityCVBO, cityCVGS, cityCVRS, cityCVHB, cityCVSH,
                         origCVBO, origCVHB, origCVSH, origCVGS, origCVRS,
                         ]).reset_index(drop=True)
 
-results_test = pd.concat([deeplearn_testBO, deeplearn_testRS, deeplearn_testSH, deeplearn_testGS, deeplearn_testHB,
-                          ppt_testBO, ppt_testHB, ppt_testSH, ppt_testGS, ppt_testRS,
-                          privatesmote_testBO, privatesmote_testSH, privatesmote_testGS, privatesmote_testHB, privatesmote_testRS,
-                          city_testBO, city_testGS, city_testRS, #city_testHB, city_testSH,
+results_test = pd.concat([deeplearn_testBO, deeplearn_testGS, deeplearn_testRS, deeplearn_testSH, deeplearn_testHB,
+                          #ppt_testBO, ppt_testHB, ppt_testSH, ppt_testGS, ppt_testRS,
+                          privatesmote_testRS, #privatesmote_testBO, privatesmote_testSH, privatesmote_testGS, privatesmote_testHB,
+                          #city_testBO, city_testGS, city_testRS, #city_testHB, city_testSH,
                           orig_testBO, orig_testHB, orig_testSH, orig_testGS, orig_testRS,
                           ]).reset_index(drop=True)
 
@@ -154,9 +153,9 @@ for idx in results_cv.index:
 
 # %% remove datasets that failed to produce synthcity variants due to a low number of singleouts
 # remove_ds = ['ds8', 'ds32', 'ds24', 'ds2', 'ds59']
-remove_ds = ['ds2', 'ds59', 'ds56', 'ds55', 'ds51', 'ds50', 'ds38', 'ds37', 'ds33']
-results_cv = results_cv[~results_cv['ds'].isin(remove_ds)]
-results_test = results_test[~results_test['ds'].isin(remove_ds)]
+# remove_ds = ['ds2', 'ds59', 'ds56', 'ds55', 'ds51', 'ds50', 'ds38', 'ds37', 'ds33']
+#results_cv = results_cv[~results_cv['ds'].isin(remove_ds)]
+# results_test = results_test[~results_test['ds'].isin(remove_ds)]
 # %%
 PROPS = {
     'boxprops':{'facecolor':'#00BFC4', 'edgecolor':'black'},

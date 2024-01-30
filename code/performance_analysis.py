@@ -25,6 +25,11 @@ def join_allresults(folder, technique):
             best_cv = result_cv_train.iloc[[result_cv_train['mean_test_score'].idxmax()]]
             # use the best model in CV to get the results of it in out of sample
             best_test = result_test.iloc[best_cv.index,:]
+
+            # save oracle results in out of sample
+            oracle_candidate = result_test.loc[result_test['test_roc_auc'].idxmax(),'test_roc_auc']
+            best_test['test_roc_auc_oracle'] = oracle_candidate
+
             # add optimzation type to the train results
             best_cv['opt_type'] = result_test['opt_type']
 

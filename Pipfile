@@ -16,6 +16,7 @@ seaborn = "*"
 pymfe = "*"
 pip = "*"
 pymoo = "*"
+synthcity = "*"
 
 [dev-packages]
 ipykernel = "*"

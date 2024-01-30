@@ -44,18 +44,18 @@ channel.queue_bind(exchange='dlx', routing_key='task_queue', queue=dl_queue.meth
 
 file_list = [f for f in os.listdir(args.input_folder) if '.csv' in f]
 for file in file_list:
-    file = file.split('.')[0]
     f = list(map(int, re.findall(r'\d+', file.split('_')[0])))[0]
+    # 2,59,56,55,51,50,38,37,33
     if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87, 100,43]:
-        # filter QIs set in PPT w/ ARX
-        if (len(file.split('_')) < 4) and len(file) > 2:
+        if len(file.split('csv')[0])<4:
+            print(file)
+            put_file_queue(channel, file.split('.csv')[0])
+        else:
+            # filter QIs set
             keys_nr = list(map(int, re.findall(r'\d+', file.split('_')[2])))[0]
             if keys_nr < 3:
                 print(file)
-                put_file_queue(channel, file)
+                put_file_queue(channel, file.split('.csv')[0])
 
-        else:
-            print(file)
-            put_file_queue(channel, file)
 
 connection.close()

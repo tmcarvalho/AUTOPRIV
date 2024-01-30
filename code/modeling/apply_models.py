@@ -7,7 +7,6 @@ import warnings
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split
 from modelingBO import evaluate_model_bo
 from modelingSH import evaluate_model_sh
 from modelingHB import evaluate_model_hb
@@ -51,23 +50,17 @@ def modeling(file, args):
     f = list(map(int, re.findall(r'\d+', file.split('_')[0])))
     index = indexes.loc[indexes['ds']==str(f[0]), 'indexes'].values[0]
 
-    orig_folder = 'original'
+    orig_folder = 'data/original'
     _, _, orig_files = next(os.walk(f'{orig_folder}'))
     orig_file = [fl for fl in orig_files if list(map(int, re.findall(r'\d+', fl.split('.')[0])))[0] == f[0]]
     print(orig_file)
     orig_data = pd.read_csv(f'{orig_folder}/{orig_file[0]}')
-    data = pd.read_csv(f'{args.input_folder}/{file}')
+    data = pd.read_csv(f'{args.input_folder}/{file}.csv')
 
     if args.type == 'original':
         data_idx = list(set(list(data.index)) - set(index))
         data = orig_data.iloc[data_idx, :]
         print(data.shape)
-
-    # if f[0] == 37: # because SDV models returns real states instead of numbers as in the original data
-    #     data.rename(columns = {'state':'code_number','phone_number':'number', 'voice_mail_plan':'voice_plan'}, inplace = True)
-    
-    # if f[0] == 55:
-    #     data.rename(columns = {'state':'code_number'}, inplace = True) 
 
     # prepare data to modeling
     orig_data = orig_data.apply(LabelEncoder().fit_transform)
@@ -75,6 +68,12 @@ def modeling(file, args):
 
     # prepare data to modeling
     if args.type == 'PrivateSMOTE':
+        if f[0] == 37: # because SDV models returns real states instead of numbers as in the original data
+            data.rename(columns = {'state':'code_number','phone_number':'number', 'voice_mail_plan':'voice_plan'}, inplace = True)
+    
+        if f[0] == 55:
+            data.rename(columns = {'state':'code_number'}, inplace = True) 
+
         x_train, y_train = data.iloc[:, :-2], data.iloc[:, -2]
     else:
         x_train, y_train = data.iloc[:, :-1], data.iloc[:, -1]

@@ -1,8 +1,10 @@
 """Predictive performance
 This script will test the predictive performance of each data set with Bayes hyperparameter optimization.
 """
+import multiprocessing
 import time
 import warnings
+import joblib
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import GradientBoostingClassifier
@@ -116,19 +118,27 @@ def evaluate_model_bo(x_train, x_test, y_train, y_test):
 
     print("Start modeling in out of sample")
 
-    score_cv = {
-    'params':[], 'model':[], 'test_roc_auc': [], 'opt_type': [],
-    }
+    # Use joblib to parallelize the loop
+    num_jobs = min(multiprocessing.cpu_count(), len(validation))
+    results = joblib.Parallel(n_jobs=num_jobs)(
+        joblib.delayed(predict_model)(args) for args in
+        [(i, grid.cv_results_['params'][i], x_train, y_train, x_test, y_test, pipeline, validation) for i in range(len(validation))]
+    )
 
-    for i in range(len(validation)):
-        # set each model for prediction on test
-        clf_best = grid.best_estimator_.set_params(**grid.cv_results_['params'][i]).fit(x_train, y_train)
-        clf = clf_best.predict(x_test)
-        score_cv['params'].append(str(grid.cv_results_['params'][i]))
-        score_cv['model'].append(validation.loc[i, 'model'])
-        score_cv['test_roc_auc'].append(roc_auc_score(y_test, clf, max_fpr=0.001))
-        score_cv['opt_type'].append("Bayes")
-
-    score_cv = pd.DataFrame(score_cv)
+    score_cv = pd.DataFrame(results)
 
     return [validation, score_cv]
+
+
+def predict_model(args):
+    i, params, x_train, y_train, x_test, y_test, pipeline, validation = args
+
+    clf_best = pipeline.set_params(**params).fit(x_train, y_train)
+    clf = clf_best.predict(x_test)
+
+    return {
+        'params': str(params),
+        'model': validation.loc[i, 'model'],
+        'test_roc_auc': roc_auc_score(y_test, clf, max_fpr=0.001),
+        'opt_type': "Bayes"
+    }

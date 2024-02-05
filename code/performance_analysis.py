@@ -96,7 +96,7 @@ origCVSH, orig_testSH = join_allresults(SH_folder, 'original')
 GS_folder = '../output/modelingGS/'
 deeplearnCVGS, deeplearn_testGS = join_allresults(GS_folder, 'deep_learning')
 #pptCVGS, ppt_testGS = join_allresults(GS_folder, 'PPT_ARX')
-#privatesmoteCVGS, privatesmote_testGS = join_allresults(GS_folder, 'PrivateSMOTE')
+privatesmoteCVGS, privatesmote_testGS = join_allresults(GS_folder, 'PrivateSMOTE')
 #cityCVGS, city_testGS = join_allresults(GS_folder, 'synthcity')
 origCVGS, orig_testGS = join_allresults(GS_folder, 'original')
 # %% Random Search
@@ -110,14 +110,14 @@ origCVRS, orig_testRS = join_allresults(RS_folder, 'original')
 # %% concat all techniques
 results_cv = pd.concat([deeplearnCVBO, deeplearnCVGS, deeplearnCVRS, deeplearnCVSH, deeplearnCVHB,
                         #pptCVBO, pptCVHB, pptCVSH, pptCVGS, pptCVRS,
-                        privatesmoteCVRS, privatesmoteCVHB, #privatesmoteCVBO, privatesmoteCVSH, privatesmoteCVGS,
+                        privatesmoteCVRS, privatesmoteCVHB, privatesmoteCVGS, #privatesmoteCVBO, privatesmoteCVSH,
                         #cityCVBO, cityCVGS, cityCVRS, cityCVHB, cityCVSH,
                         origCVBO, origCVHB, origCVSH, origCVGS, origCVRS,
                         ]).reset_index(drop=True)
 
 results_test = pd.concat([deeplearn_testBO, deeplearn_testGS, deeplearn_testRS, deeplearn_testSH, deeplearn_testHB,
                           #ppt_testBO, ppt_testHB, ppt_testSH, ppt_testGS, ppt_testRS,
-                          privatesmote_testRS, privatesmote_testHB, #privatesmote_testBO, privatesmote_testSH, privatesmote_testGS,
+                          privatesmote_testRS, privatesmote_testHB, privatesmote_testGS, #privatesmote_testBO, privatesmote_testSH,
                           #city_testBO, city_testGS, city_testRS, #city_testHB, city_testSH,
                           orig_testBO, orig_testHB, orig_testSH, orig_testGS, orig_testRS,
                           ]).reset_index(drop=True)
@@ -259,4 +259,6 @@ plt.xlabel("")
 #plt.ylabel("Time (min)")
 plt.show()
 
+# %%
+results_cv.loc[results_cv.time >8.5]
 # %%

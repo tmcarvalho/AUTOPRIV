@@ -78,17 +78,23 @@ if args.type == 'Synthcity':
     n_iter=[100, 200]
     batch_size_=[50, 100]
     epsilon=[0.1, 0.5, 1.0, 5.0]
-
+    file_list_priv = os.listdir("data/synthcity/")
+    mf = []
     for file in files:
         f = int(file.split('.csv')[0])
         if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87, 100,43]:
-            print(file)
+            # print(file)
             for technique in ['dpgan', 'pategan']:
                 for idx in range(5):
                     for epo in n_iter:
                         for bs in batch_size_:
                             for epi in epsilon:
-                                print(f'ds{file.split(".")[0]}_{technique}_QI{idx}_epo{epo}_bs{bs}_epi{epi}')
-                                put_file_queue(channel, f'ds{file.split(".")[0]}_{technique}_QI{idx}_epo{epo}_bs{bs}_epi{epi}')
+                                # print(f'ds{file.split(".")[0]}_{technique}_QI{idx}_epo{epo}_bs{bs}_epi{epi}')
+                                mf.append(f'ds{file.split(".")[0]}_{technique}_QI{idx}_epo{epo}_bs{bs}_epi{epi}.csv')                          
+    
+    missing_files = list(set(mf)-set(file_list_priv))
+    for file in missing_files:
+        put_file_queue(channel, file)
+    
 
 connection.close()

@@ -85,55 +85,84 @@ unseen_data = unseen_data.fillna(99999)
 # Label encode 'technique'
 unseen_data['technique'] = label_encoder.fit_transform(unseen_data['technique'])
 
+print( unseen_data.shape)
+
 # Train logistic regression model on the training data for predictive performance
 lr_performance = LinearRegression()
 lr_performance.fit(x_train, y_train)
 
 # Predict using the logistic regression model
-predictions_performance = lr_performance.predict(unseen_data.values)
+# predictions_performance = lr_performance.predict(unseen_data.values)
 
 # Train logistic regression model on the training data for predictive performance
 lr_linkability = LinearRegression()
 lr_linkability.fit(x_train, linkability)
 
 # Predict using the logistic regression model
-predictions_linkability = lr_linkability.predict(unseen_data.values)
+# predictions_linkability = lr_linkability.predict(unseen_data.values)
 
 # print("Predictions:", predictions_performance)
-pred_performance = pd.DataFrame(predictions_performance, columns=['Predictions Performance'])
-pred_linkability = pd.DataFrame(predictions_linkability, columns=['Predictions Linkability'])
+# pred_performance = pd.DataFrame(predictions_performance, columns=['Predictions Performance'])
+# pred_linkability = pd.DataFrame(predictions_linkability, columns=['Predictions Linkability'])
 
-output = pd.concat([unseen_data.iloc[:,96:], pred_performance, pred_linkability], axis=1)
+# output = pd.concat([unseen_data.iloc[:,96:], pred_performance, pred_linkability], axis=1)
 
-output['technique'] = label_encoder.inverse_transform(output['technique'])
+# output['technique'] = label_encoder.inverse_transform(output['technique'])
 
 # output = output.sort_values(by=['Predictions Performance'], ascending=False)
 # Rank the predictions based on the predicted values
-print(output.head(10))
+# print(output.head(10))
 
+# Define the accuracy and linkability prediction functions
+def accuracy(x):
+    print(x)
+    # Extract the privacy configurations for the current solution
+    privacy_configurations = unseen_data.iloc[x, 96:]
+    print(privacy_configurations)
+    # Predict the accuracy using the first meta-model
+    predictions_performance = lr_performance.predict(privacy_configurations.values)
 
+    return predictions_performance
+
+def linkability(x):
+    # Extract the privacy configurations for the current solution
+    privacy_configurations = unseen_data.iloc[x, :].values
+
+    # Predict the linkability using the second meta-model
+    predictions_linkability = lr_linkability.predict(privacy_configurations.values)
+
+    return -predictions_linkability  # Negate to minimize linkability
+
+# TODO: fix this code, understand what is X in evaluate
 # Define the multi-objective problem for optimization
 class MyProblem(Problem):
-    def __init__(self):
-        super().__init__(n_var=output.shape[0], n_obj=2, xl=0, xu=5, type_var=np.float)
-
+    def __init__(self, lr_performance, lr_linkability, unseen_data):
+        super().__init__(n_var=unseen_data.shape[0], n_obj=2, xl=0, xu=5, type_var=np.float)
+        self.lr_performance = lr_performance
+        self.lr_linkability = lr_linkability
+        self.unseen_data = unseen_data
     def _evaluate(self, x, out, *args, **kwargs):
-        f1 = output['Predictions Performance'].values
-        f2 = -output['Predictions Linkability'].values
-        out["F"] = np.column_stack([f1, f2])
+        # Get the actual configuration from the dataset using the provided index x[0]
+        actual_configuration = self.unseen_data.iloc[x[0], :].values.reshape(1, -1)
+        # Predict using the linear regression models
+        predictions_accuracy = self.lr_performance.predict(actual_configuration)
+        predictions_linkability = self.lr_linkability.predict(actual_configuration)
+
+        # Assign the objectives to out["F"]
+        out["F"] = np.column_stack([predictions_accuracy, predictions_linkability])
 
 # Instantiate the problem
-problem = MyProblem()
+problem = MyProblem(lr_performance, lr_linkability, unseen_data)
 
 # Define the optimization algorithm (NSGA-II)
-algorithm = NSGA2(pop_size=output.shape[0])
+algorithm = NSGA2(pop_size=unseen_data.shape[0])
 
 # Optimize the objectives
-result = minimize(problem, algorithm, ('n_gen', 200), seed=1, verbose=True)
+result = minimize(problem, algorithm, ('n_gen', 100), seed=1, verbose=True)
 
 # Get the optimal solutions
 optimal_solutions = result.X
-optimal_accuracy = result.F[:, 0]  # Negate to get the actual accuracy values
+optimal_accuracy = result.F[:, 0]
 optimal_linkability = -result.F[:, 1]  # Negate to get the actual linkability values
 
 # Print or use the optimal solutions as needed
@@ -147,5 +176,5 @@ print(len(pareto_front_df))
 pareto_front_df.Linkability = -pareto_front_df.Linkability
 print(pareto_front_df)
 # Plot the Pareto front
-sns.scatterplot(data=pareto_front_df, x='Performance', y='Linkability')
-plt.show()
+# sns.scatterplot(data=pareto_front_df, x='Performance', y='Linkability')
+# plt.show()

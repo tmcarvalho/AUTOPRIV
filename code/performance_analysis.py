@@ -72,7 +72,6 @@ def join_allresults(folder, technique):
 # %% Baeys optimization
 BO_folder = '../output/modelingBO/'
 deeplearnCVBO, deeplearn_testBO = join_allresults(BO_folder, 'deep_learning')
-# pptCVBO, ppt_testBO = join_allresults(BO_folder, 'PPT_ARX')
 #%%
 privatesmoteCVBO, privatesmote_testBO = join_allresults(BO_folder, 'PrivateSMOTE')
 #%%
@@ -82,7 +81,6 @@ origCVBO, orig_testBO = join_allresults(BO_folder, 'original')
 # %% Hyperband
 HB_folder = '../output/modelingHB/'
 deeplearnCVHB, deeplearn_testHB = join_allresults(HB_folder, 'deep_learning')
-#pptCVHB, ppt_testHB = join_allresults(HB_folder, 'PPT_ARX')
 privatesmoteCVHB, privatesmote_testHB = join_allresults(HB_folder, 'PrivateSMOTE')
 cityCVHB, city_testHB = join_allresults(HB_folder, 'synthcity')
 origCVHB, orig_testHB = join_allresults(HB_folder, 'original')
@@ -90,44 +88,37 @@ origCVHB, orig_testHB = join_allresults(HB_folder, 'original')
 # %% Sussessive Halving
 SH_folder = '../output/modelingSH/'
 deeplearnCVSH, deeplearn_testSH = join_allresults(SH_folder, 'deep_learning')
-#pptCVSH, ppt_testSH = join_allresults(SH_folder, 'PPT_ARX')
 privatesmoteCVSH, privatesmote_testSH = join_allresults(SH_folder, 'PrivateSMOTE')
 cityCVSH, city_testSH = join_allresults(SH_folder, 'synthcity')
 origCVSH, orig_testSH = join_allresults(SH_folder, 'original')
 # %% Grid Search
 GS_folder = '../output/modelingGS/'
 deeplearnCVGS, deeplearn_testGS = join_allresults(GS_folder, 'deep_learning')
-#pptCVGS, ppt_testGS = join_allresults(GS_folder, 'PPT_ARX')
 privatesmoteCVGS, privatesmote_testGS = join_allresults(GS_folder, 'PrivateSMOTE')
 cityCVGS, city_testGS = join_allresults(GS_folder, 'synthcity')
 origCVGS, orig_testGS = join_allresults(GS_folder, 'original')
 # %% Random Search
 RS_folder = '../output/modelingRS/'
 deeplearnCVRS, deeplearn_testRS = join_allresults(RS_folder, 'deep_learning')
-#pptCVRS, ppt_testRS = join_allresults(RS_folder, 'PPT_ARX')
 privatesmoteCVRS, privatesmote_testRS = join_allresults(RS_folder, 'PrivateSMOTE')
 cityCVRS, city_testRS = join_allresults(RS_folder, 'synthcity')
 origCVRS, orig_testRS = join_allresults(RS_folder, 'original')
 
 # %% concat all techniques
 results_cv = pd.concat([deeplearnCVBO, deeplearnCVGS, deeplearnCVRS, deeplearnCVSH, deeplearnCVHB,
-                        #pptCVBO, pptCVHB, pptCVSH, pptCVGS, pptCVRS,
                         privatesmoteCVRS, privatesmoteCVHB, privatesmoteCVGS, privatesmoteCVBO, privatesmoteCVSH,
                         cityCVGS, cityCVRS, cityCVSH, cityCVBO, cityCVHB,
                         origCVBO, origCVHB, origCVSH, origCVGS, origCVRS,
                         ]).reset_index(drop=True)
 
 results_test = pd.concat([deeplearn_testBO, deeplearn_testGS, deeplearn_testRS, deeplearn_testSH, deeplearn_testHB,
-                          #ppt_testBO, ppt_testHB, ppt_testSH, ppt_testGS, ppt_testRS,
                           privatesmote_testRS, privatesmote_testHB, privatesmote_testGS, privatesmote_testBO, privatesmote_testSH,
                           city_testGS, city_testRS, city_testSH , city_testBO, city_testHB,
                           orig_testBO, orig_testHB, orig_testSH, orig_testGS, orig_testRS,
                           ]).reset_index(drop=True)
 
 # %%
-# results_cv.loc[results_cv['technique']=='PPT_ARX', 'technique'] = 'PPT'
 results_cv.loc[results_cv['technique']=='CopulaGAN', 'technique'] = 'Copula GAN'
-# results_test.loc[results_test['technique']=='PPT_ARX', 'technique'] = 'PPT'
 results_test.loc[results_test['technique']=='CopulaGAN', 'technique'] = 'Copula GAN'
 # %% prepare to calculate percentage difference
 original_results_cv = results_cv.loc[results_cv['technique']=='original'].reset_index(drop=True)
@@ -243,7 +234,6 @@ plt.show()
 figure = ax.get_figure()
 figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/timeCV_optypek3.pdf', bbox_inches='tight')
 
-# %%
 # %% time during all processes in CV per each technique
 sns.set_style("darkgrid")
 plt.figure(figsize=(15,8))

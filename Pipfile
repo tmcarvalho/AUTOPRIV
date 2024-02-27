@@ -17,6 +17,7 @@ pymfe = "*"
 pip = "*"
 pymoo = "*"
 synthcity = "*"
+anonymeter = "*"
 
 [dev-packages]
 ipykernel = "*"

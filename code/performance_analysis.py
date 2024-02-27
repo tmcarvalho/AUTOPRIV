@@ -143,11 +143,11 @@ for idx in results_cv.index:
     results_test['roc_auc_perdif'][idx] = (results_test['test_roc_auc'][idx] - orig_file_test['test_roc_auc'].iloc[0]) / orig_file_test['test_roc_auc'].iloc[0] * 100
 
 # %%
-results_cv.to_csv('../output_analysis/resultsCV_new.csv', index=False)
-results_test.to_csv('../output_analysis/results_test_new.csv', index=False)
+results_cv.to_csv('../output_analysis/resultsCV.csv', index=False)
+results_test.to_csv('../output_analysis/results_test.csv', index=False)
 # %%
-# results_cv = pd.read_csv('../output_analysis/resultsCV_new.csv')
-# results_test = pd.read_csv('../output_analysis/results_test_new.csv')
+# results_cv = pd.read_csv('../output_analysis/resultsCV.csv')
+# results_test = pd.read_csv('../output_analysis/results_test.csv')
 
 # %% remove datasets that failed to produce synthcity variants due to a low number of singleouts
 # remove_ds = ['ds8', 'ds32', 'ds24', 'ds2', 'ds59']

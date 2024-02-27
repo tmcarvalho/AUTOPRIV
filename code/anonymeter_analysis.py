@@ -36,7 +36,7 @@ risk_privateSMOTE = risk_privateSMOTE.reset_index(drop=True)
 risk_city = risk_city.reset_index(drop=True)
 # %%
 risk_deeplearning['technique'] = risk_deeplearning['ds_complete'].apply(lambda x: x.split('_')[1])
-risk_privateSMOTE['technique'] = 'PrivateSMOTE'
+risk_privateSMOTE['technique'] = r'$\epsilon$-PrivateSMOTE'
 risk_city['technique'] = risk_city['ds_complete'].apply(lambda x: x.split('_')[1].upper())
 # %%
 results = []
@@ -46,19 +46,18 @@ results = results.reset_index(drop=True)
 results['dsn'] = results['ds_complete'].apply(lambda x: x.split('_')[0])
 # %%
 results.loc[results['technique']=='CopulaGAN', 'technique'] = 'Copula GAN'
-results.loc[results['technique']=='PrivateSMOTE', 'technique'] = r'$\epsilon$-PrivateSMOTE'
 # %%
 results.to_csv('../output_analysis/anonymeterk3.csv', index=False)
 # %%
-results_risk_max = results.copy()
-results_risk_max = results.loc[results.groupby(['dsn', 'technique'])['value'].idxmin()].reset_index(drop=True)
+#results_risk_max = results.copy()
+#results_risk_max = results.loc[results.groupby(['dsn', 'technique'])['value'].idxmin()].reset_index(drop=True)
 
-# %%  BETTER IN PRIVACY
+# %%
 order = ['Copula GAN', 'TVAE', 'CTGAN', 'DPGAN', 'PATEGAN', r'$\epsilon$-PrivateSMOTE']
 
 sns.set_style("darkgrid")
 plt.figure(figsize=(20,10))
-ax = sns.boxplot(data=results_risk_max,
+ax = sns.boxplot(data=results,
     x='technique', y='value', order=order, color='c')
 sns.set(font_scale=2.5)
 ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1), ncol=3, title='', borderaxespad=0., frameon=False)

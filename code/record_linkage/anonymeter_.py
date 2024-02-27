@@ -23,29 +23,13 @@ def load_data(file, args, set_key_vars):
         map(int, re.findall(r'\d+', fl.split('.')[0])))[0] == f[0]]
     print(orig_file)
 
-    if args.type != 'PPT':
-        data = pd.read_csv(f'{orig_folder}/{orig_file[0]}')
-        # split data 80/20
-        idx = list(set(list(data.index)) - set(index))
-        orig_data = data.iloc[idx, :].reset_index(drop=True)
-        control_data = data.iloc[index]
-        transf_data = pd.read_csv(f'{args.input_folder}/{file}')
-    else:
-        orig_data = pd.read_csv(
-            f'{orig_folder}/PPT_ARX_train_orig/{orig_file[0]}')
-        control_data = pd.read_csv(
-            f'{orig_folder}/PPT_ARX_test_orig/{orig_file[0]}')
-        transf_data = pd.read_csv(f'{args.input_folder}/{file}')
-
-        keys_nr = list(map(int, re.findall(r'\d+', file.split('_')[2])))[0]
-        print(keys_nr)
-        keys = set_key_vars[keys_nr]
-        # transform '*' in np.nan because of data types
-        if transf_data[keys[0]].iloc[-1] == '*':
-            transf_data = transf_data.replace('*', np.nan)
-
-        transf_data = orig_data.astype(dtype=orig_data.dtypes)
-
+    data = pd.read_csv(f'{orig_folder}/{orig_file[0]}')
+    # split data 80/20
+    idx = list(set(list(data.index)) - set(index))
+    orig_data = data.iloc[idx, :].reset_index(drop=True)
+    control_data = data.iloc[index]
+    transf_data = pd.read_csv(f'{args.input_folder}/{file}')
+    
     return orig_data, control_data, transf_data
 
 

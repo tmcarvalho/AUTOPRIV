@@ -25,26 +25,22 @@ def concat_each_file(folder):
     return concat_results
 
 # %%
-risk_ppt = concat_each_file('../output/anonymeter/PPT_ARX')
-# %%
 risk_deeplearning = concat_each_file('../output/anonymeter/deep_learningk2')
 # %%
 risk_privateSMOTE = concat_each_file('../output/anonymeter/PrivateSMOTEk2')
 # %%
 risk_city = concat_each_file('../output/anonymeter/synthcityk2')
 # %%
-risk_ppt = risk_ppt.reset_index(drop=True)
 risk_deeplearning = risk_deeplearning.reset_index(drop=True)
 risk_privateSMOTE = risk_privateSMOTE.reset_index(drop=True)
 risk_city = risk_city.reset_index(drop=True)
 # %%
-risk_ppt['technique'] = 'PPT'
 risk_deeplearning['technique'] = risk_deeplearning['ds_complete'].apply(lambda x: x.split('_')[1])
 risk_privateSMOTE['technique'] = 'PrivateSMOTE'
 risk_city['technique'] = risk_city['ds_complete'].apply(lambda x: x.split('_')[1].upper())
 # %%
 results = []
-results = pd.concat([risk_ppt, risk_deeplearning, risk_privateSMOTE, risk_city])
+results = pd.concat([risk_deeplearning, risk_privateSMOTE, risk_city])
 results = results.reset_index(drop=True)
 # %%
 results['dsn'] = results['ds_complete'].apply(lambda x: x.split('_')[0])
@@ -52,13 +48,13 @@ results['dsn'] = results['ds_complete'].apply(lambda x: x.split('_')[0])
 results.loc[results['technique']=='CopulaGAN', 'technique'] = 'Copula GAN'
 results.loc[results['technique']=='PrivateSMOTE', 'technique'] = r'$\epsilon$-PrivateSMOTE'
 # %%
-# results.to_csv('../output/anonymeterk2.csv', index=False)
+results.to_csv('../output_analysis/anonymeterk3.csv', index=False)
 # %%
 results_risk_max = results.copy()
 results_risk_max = results.loc[results.groupby(['dsn', 'technique'])['value'].idxmin()].reset_index(drop=True)
 
 # %%  BETTER IN PRIVACY
-order = ['PPT', 'Copula GAN', 'TVAE', 'CTGAN', 'DPGAN', 'PATEGAN', r'$\epsilon$-PrivateSMOTE']
+order = ['Copula GAN', 'TVAE', 'CTGAN', 'DPGAN', 'PATEGAN', r'$\epsilon$-PrivateSMOTE']
 
 sns.set_style("darkgrid")
 plt.figure(figsize=(20,10))
@@ -70,7 +66,7 @@ ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1), ncol=3, title='', bordera
 #ax.set_ylim(-0.2,150)
 plt.xticks(rotation=45)
 plt.xlabel("")
-plt.ylabel("Re-identification Risk")
+plt.ylabel("Linkability Risk")
 plt.show()
 
 # %%

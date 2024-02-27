@@ -222,7 +222,7 @@ sns.set_style("darkgrid")
 plt.figure(figsize=(15,8))
 ax = sns.boxplot(data=results_cv, x='opt_type', y='fit_time_sum',
                  order=order_optype, **PROPS)
-sns.set(font_scale=1.5)
+sns.set(font_scale=1.8)
 plt.xticks(rotation=45)
 plt.xlabel("")
 plt.ylabel("Time (min)")
@@ -235,10 +235,12 @@ sns.set_style("darkgrid")
 plt.figure(figsize=(15,8))
 ax = sns.boxplot(data=results_cv, x='opt_type', y='time',
                  order=order_optype, **PROPS)
-sns.set(font_scale=1.5)
+sns.set(font_scale=1.7)
 plt.xticks(rotation=45)
 plt.xlabel("")
 plt.ylabel("Time (min)")
 plt.show()
 figure = ax.get_figure()
 figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/timeCV_optypek3.pdf', bbox_inches='tight')
+
+# %%

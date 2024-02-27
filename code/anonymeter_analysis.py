@@ -25,11 +25,11 @@ def concat_each_file(folder):
     return concat_results
 
 # %%
-risk_deeplearning = concat_each_file('../output/anonymeter/deep_learningk2')
+risk_deeplearning = concat_each_file('../output/anonymeter/deep_learning')
 # %%
-risk_privateSMOTE = concat_each_file('../output/anonymeter/PrivateSMOTEk2')
+risk_privateSMOTE = concat_each_file('../output/anonymeter/PrivateSMOTE')
 # %%
-risk_city = concat_each_file('../output/anonymeter/synthcityk2')
+risk_city = concat_each_file('../output/anonymeter/synthcity')
 # %%
 risk_deeplearning = risk_deeplearning.reset_index(drop=True)
 risk_privateSMOTE = risk_privateSMOTE.reset_index(drop=True)

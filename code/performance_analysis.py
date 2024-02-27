@@ -73,8 +73,10 @@ def join_allresults(folder, technique):
 BO_folder = '../output/modelingBO/'
 deeplearnCVBO, deeplearn_testBO = join_allresults(BO_folder, 'deep_learning')
 # pptCVBO, ppt_testBO = join_allresults(BO_folder, 'PPT_ARX')
-#privatesmoteCVBO, privatesmote_testBO = join_allresults(BO_folder, 'PrivateSMOTE')
-#cityCVBO, city_testBO = join_allresults(BO_folder, 'synthcity')
+#%%
+privatesmoteCVBO, privatesmote_testBO = join_allresults(BO_folder, 'PrivateSMOTE')
+#%%
+cityCVBO, city_testBO = join_allresults(BO_folder, 'synthcity')
 origCVBO, orig_testBO = join_allresults(BO_folder, 'original')
 
 # %% Hyperband
@@ -82,50 +84,50 @@ HB_folder = '../output/modelingHB/'
 deeplearnCVHB, deeplearn_testHB = join_allresults(HB_folder, 'deep_learning')
 #pptCVHB, ppt_testHB = join_allresults(HB_folder, 'PPT_ARX')
 privatesmoteCVHB, privatesmote_testHB = join_allresults(HB_folder, 'PrivateSMOTE')
-#cityCVHB, city_testHB = join_allresults(HB_folder, 'synthcity')
+cityCVHB, city_testHB = join_allresults(HB_folder, 'synthcity')
 origCVHB, orig_testHB = join_allresults(HB_folder, 'original')
 
 # %% Sussessive Halving
 SH_folder = '../output/modelingSH/'
 deeplearnCVSH, deeplearn_testSH = join_allresults(SH_folder, 'deep_learning')
 #pptCVSH, ppt_testSH = join_allresults(SH_folder, 'PPT_ARX')
-#privatesmoteCVSH, privatesmote_testSH = join_allresults(SH_folder, 'PrivateSMOTE')
-#cityCVSH, city_testSH = join_allresults(SH_folder, 'synthcity')
+privatesmoteCVSH, privatesmote_testSH = join_allresults(SH_folder, 'PrivateSMOTE')
+cityCVSH, city_testSH = join_allresults(SH_folder, 'synthcity')
 origCVSH, orig_testSH = join_allresults(SH_folder, 'original')
 # %% Grid Search
 GS_folder = '../output/modelingGS/'
 deeplearnCVGS, deeplearn_testGS = join_allresults(GS_folder, 'deep_learning')
 #pptCVGS, ppt_testGS = join_allresults(GS_folder, 'PPT_ARX')
 privatesmoteCVGS, privatesmote_testGS = join_allresults(GS_folder, 'PrivateSMOTE')
-#cityCVGS, city_testGS = join_allresults(GS_folder, 'synthcity')
+cityCVGS, city_testGS = join_allresults(GS_folder, 'synthcity')
 origCVGS, orig_testGS = join_allresults(GS_folder, 'original')
 # %% Random Search
 RS_folder = '../output/modelingRS/'
 deeplearnCVRS, deeplearn_testRS = join_allresults(RS_folder, 'deep_learning')
 #pptCVRS, ppt_testRS = join_allresults(RS_folder, 'PPT_ARX')
 privatesmoteCVRS, privatesmote_testRS = join_allresults(RS_folder, 'PrivateSMOTE')
-#cityCVRS, city_testRS = join_allresults(RS_folder, 'synthcity')
+cityCVRS, city_testRS = join_allresults(RS_folder, 'synthcity')
 origCVRS, orig_testRS = join_allresults(RS_folder, 'original')
 
 # %% concat all techniques
 results_cv = pd.concat([deeplearnCVBO, deeplearnCVGS, deeplearnCVRS, deeplearnCVSH, deeplearnCVHB,
                         #pptCVBO, pptCVHB, pptCVSH, pptCVGS, pptCVRS,
-                        privatesmoteCVRS, privatesmoteCVHB, privatesmoteCVGS, #privatesmoteCVBO, privatesmoteCVSH,
-                        #cityCVBO, cityCVGS, cityCVRS, cityCVHB, cityCVSH,
+                        privatesmoteCVRS, privatesmoteCVHB, privatesmoteCVGS, privatesmoteCVBO, privatesmoteCVSH,
+                        cityCVGS, cityCVRS, cityCVSH, cityCVBO, cityCVHB,
                         origCVBO, origCVHB, origCVSH, origCVGS, origCVRS,
                         ]).reset_index(drop=True)
 
 results_test = pd.concat([deeplearn_testBO, deeplearn_testGS, deeplearn_testRS, deeplearn_testSH, deeplearn_testHB,
                           #ppt_testBO, ppt_testHB, ppt_testSH, ppt_testGS, ppt_testRS,
-                          privatesmote_testRS, privatesmote_testHB, privatesmote_testGS, #privatesmote_testBO, privatesmote_testSH,
-                          #city_testBO, city_testGS, city_testRS, #city_testHB, city_testSH,
+                          privatesmote_testRS, privatesmote_testHB, privatesmote_testGS, privatesmote_testBO, privatesmote_testSH,
+                          city_testGS, city_testRS, city_testSH , city_testBO, city_testHB,
                           orig_testBO, orig_testHB, orig_testSH, orig_testGS, orig_testRS,
                           ]).reset_index(drop=True)
 
 # %%
-results_cv.loc[results_cv['technique']=='PPT_ARX', 'technique'] = 'PPT'
+# results_cv.loc[results_cv['technique']=='PPT_ARX', 'technique'] = 'PPT'
 results_cv.loc[results_cv['technique']=='CopulaGAN', 'technique'] = 'Copula GAN'
-results_test.loc[results_test['technique']=='PPT_ARX', 'technique'] = 'PPT'
+# results_test.loc[results_test['technique']=='PPT_ARX', 'technique'] = 'PPT'
 results_test.loc[results_test['technique']=='CopulaGAN', 'technique'] = 'Copula GAN'
 # %% prepare to calculate percentage difference
 original_results_cv = results_cv.loc[results_cv['technique']=='original'].reset_index(drop=True)
@@ -150,8 +152,8 @@ for idx in results_cv.index:
     results_test['roc_auc_perdif'][idx] = (results_test['test_roc_auc'][idx] - orig_file_test['test_roc_auc'].iloc[0]) / orig_file_test['test_roc_auc'].iloc[0] * 100
 
 # %%
-# results_cv.to_csv('../output_analysis/resultsCV_new.csv', index=False)
-# results_test.to_csv('../output_analysis/results_test_new.csv', index=False)
+results_cv.to_csv('../output_analysis/resultsCV_new.csv', index=False)
+results_test.to_csv('../output_analysis/results_test_new.csv', index=False)
 # %%
 # results_cv = pd.read_csv('../output_analysis/resultsCV_new.csv')
 # results_test = pd.read_csv('../output_analysis/results_test_new.csv')
@@ -168,51 +170,52 @@ PROPS = {
     'whiskerprops':{'color':'black'},
     'capprops':{'color':'black'}
 }
-order_technique = ['PPT', 'Copula GAN', 'TVAE', 'CTGAN', r'$\epsilon$-PrivateSMOTE', 'DPGAN', 'PATEGAN']
+color_techniques = ['#26C6DA', '#AB47BC', '#FFA000', '#FFEB3B', '#9CCC65', '#E91E63']
+order_technique = ['Copula GAN', 'TVAE', 'CTGAN', 'DPGAN', 'PATEGAN', r'$\epsilon$-PrivateSMOTE']
 order_optype = ['GridSearch', 'RandomSearch', 'Bayes', 'Halving', 'Hyperband']
 # %% ROC AUC in Cross Validation
 sns.set_style("darkgrid")
 plt.figure(figsize=(18,10))
 ax = sns.boxplot(data=results_cv, x='opt_type', y='roc_auc_perdif', hue='technique',
-                 order=order_optype, hue_order=order_technique, palette="Set3")
+                 order=order_optype, hue_order=order_technique, palette=color_techniques)
 sns.set(font_scale=2.2)
 plt.xticks(rotation=45)
 plt.xlabel("")
 # plt.yscale('symlog')
-plt.ylabel("Percentage difference of \n predictive performance (AUC) in CV")
+plt.ylabel("Percentage difference of \n predictive performance (AUC)")
 sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transformations', borderaxespad=0., frameon=False)
 plt.show()
-# figure = ax.get_figure()
-# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performanceCV_optypek2_new.pdf', bbox_inches='tight')
+figure = ax.get_figure()
+figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performanceCV_optypek3.pdf', bbox_inches='tight')
 
 # %% ROC AUC in out of sample
 sns.set_style("darkgrid")
 plt.figure(figsize=(18,10))
 ax = sns.boxplot(data=results_test, x='opt_type', y='roc_auc_perdif', hue='technique',
-                 order=order_optype, hue_order=order_technique, palette="Set3")
+                 order=order_optype, hue_order=order_technique, palette=color_techniques)
 sns.set(font_scale=2.2)
 plt.xticks(rotation=45)
 plt.xlabel("")
-plt.ylabel("Predictive performance (AUC) \n in out of sample")
+plt.ylabel("Percentage difference of \n predictive performance (AUC)")
 sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transformations', borderaxespad=0., frameon=False)
 plt.show()
-# figure = ax.get_figure()
-# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optype_new.pdf', bbox_inches='tight')
+figure = ax.get_figure()
+figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3.pdf', bbox_inches='tight')
 
 # %% ROC AUC in out of sample -- BEST
 results_test_best = results_test.loc[results_test.groupby(['ds', 'technique', 'opt_type'])['roc_auc_perdif'].idxmax()]
 sns.set_style("darkgrid")
 plt.figure(figsize=(18,10))
 ax = sns.boxplot(data=results_test_best, x='opt_type', y='roc_auc_perdif', hue='technique',
-                 order=order_optype, hue_order=order_technique, palette="Set3")
+                 order=order_optype, hue_order=order_technique, palette=color_techniques)
 sns.set(font_scale=2.2)
 plt.xticks(rotation=45)
 plt.xlabel("")
-plt.ylabel("Predictive performance (AUC) \n in out of sample")
+plt.ylabel("Percentage difference of \n predictive performance (AUC)")
 sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transformations', borderaxespad=0., frameon=False)
 plt.show()
-# figure = ax.get_figure()
-# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optype_new.pdf', bbox_inches='tight')
+figure = ax.get_figure()
+figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_best.pdf', bbox_inches='tight')
 
 # %% fit time in CV
 sns.set_style("darkgrid")
@@ -224,8 +227,8 @@ plt.xticks(rotation=45)
 plt.xlabel("")
 plt.ylabel("Time (min)")
 plt.show()
-# figure = ax.get_figure()
-# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/fittimeCV_optypek2.pdf', bbox_inches='tight')
+figure = ax.get_figure()
+figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/fittimeCV_optypek3.pdf', bbox_inches='tight')
 
 # %% time during all processes in CV
 sns.set_style("darkgrid")
@@ -237,28 +240,5 @@ plt.xticks(rotation=45)
 plt.xlabel("")
 plt.ylabel("Time (min)")
 plt.show()
-# figure = ax.get_figure()
-# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/timeCV_optypek2_new.pdf', bbox_inches='tight')
-
-# %%
-sns.set_style("darkgrid")
-plt.figure(figsize=(15,8))
-ax = sns.boxplot(data=results_cv, x='opt_type', y='mean_test_score')
-sns.set(font_scale=1.5)
-plt.xticks(rotation=45)
-plt.xlabel("")
-#plt.ylabel("Time (min)")
-plt.show()
-# %%
-sns.set_style("darkgrid")
-plt.figure(figsize=(15,8))
-ax = sns.boxplot(data=results_test, x='opt_type', y='test_roc_auc')
-sns.set(font_scale=1.5)
-plt.xticks(rotation=45)
-plt.xlabel("")
-#plt.ylabel("Time (min)")
-plt.show()
-
-# %%
-results_cv.loc[results_cv.time >8.5]
-# %%
+figure = ax.get_figure()
+figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/timeCV_optypek3.pdf', bbox_inches='tight')

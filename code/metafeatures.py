@@ -3,15 +3,16 @@ from pymfe.mfe import MFE
 import pandas as pd
 
 # %%
+deepl = ['TVAE', 'CopulaGAN', 'CTGAN']
+city = ['pategan', 'dpgan']
 def meta_features(file):
     if any(word in file for word in deepl):
-        data = pd.read_csv(f'../data/deep_learningk2/{file}')
-    if 'transf' in file:
-        data = pd.read_csv(f'../data/PPT_transformed/PPT_train/{file}')
+        data = pd.read_csv(f'../data/deep_learning/{file}')
+
     if 'privateSMOTE' in file:
-        data = pd.read_csv(f'../data/PrivateSMOTEk2/{file}')
+        data = pd.read_csv(f'../data/PrivateSMOTE/{file}')
     if any(word in file for word in city):
-        data = pd.read_csv(f'../data/synthcityk2/{file}')
+        data = pd.read_csv(f'../data/synthcity/{file}')
     
     if 'privateSMOTE' in file:
         X, y = data.iloc[:, :-2].values, data.iloc[:, -2].values
@@ -26,11 +27,9 @@ def meta_features(file):
 
     return ftdf
 
-# %%
+# %% get only the best optimisation type and store linkability and roc auc results
 performance_results = pd.read_csv('../output_analysis/results_test.csv')
-linkability_results = pd.read_csv('../output/anonymeterk2.csv')
-deepl = ['TVAE', 'CopulaGAN', 'CTGAN']
-city = ['pategan', 'dpgan']
+linkability_results = pd.read_csv('../output_analysis/anonymeterk3.csv')
 all_metaft = []
 c=0
 for idx in performance_results.index:
@@ -58,18 +57,13 @@ for idx in metaft_df.index:
     metaft_df.at[idx, 'technique'] = technique
     
     if technique in (deepl + city):
-        print(''.join(filter(str.isdigit, metaft_df.ds_complete[idx].split('_')[2])))
         metaft_df.at[idx, 'QI'] = ''.join(filter(str.isdigit, metaft_df.ds_complete[idx].split('_')[2]))
         metaft_df.at[idx, 'epochs'] = ''.join(filter(str.isdigit, metaft_df.ds_complete[idx].split('_')[3]))
         metaft_df.at[idx, 'batch'] = ''.join(filter(str.isdigit, metaft_df.ds_complete[idx].split('_')[4].split('.')[0]))
         
         if technique in city:
             metaft_df.at[idx, 'epsilon'] = ''.join(filter(str.isdigit, metaft_df.ds_complete[idx].split('_')[5].split('.')[0]))
-    
-    if 'transf' in metaft_df.ds_complete[idx]:
-        metaft_df.at[idx, 'n_transf'] = ''.join(filter(str.isdigit, metaft_df.ds_complete[idx].split('_')[1]))
-        metaft_df.at[idx, 'QI'] = ''.join(filter(str.isdigit, metaft_df.ds_complete[idx].split('_')[2].split('.')[0]))
-    
+
     if 'privateSMOTE' in metaft_df.ds_complete[idx]:
         metaft_df.at[idx, 'QI'] = ''.join(filter(str.isdigit, metaft_df.ds_complete[idx].split('_')[2]))
         metaft_df.at[idx, 'knn'] = ''.join(filter(str.isdigit, metaft_df.ds_complete[idx].split('_')[3]))
@@ -80,7 +74,7 @@ end_cols = ['linkability_score', 'test_roc_auc']
 other_cols = [col for col in metaft_df.columns if col not in end_cols]
 metaft_df = metaft_df[other_cols + end_cols]
 # %%
-metaft_df.to_csv('../output_analysis/metaft.csv', index=False)
+metaft_df.to_csv('../output_analysis/metaftk3.csv', index=False)
 
 # %%
 

@@ -1,6 +1,3 @@
-"""Apply sinthetisation with SMOTE
-This script will apply SMOTE technique in the single out cases.
-"""
 # %%
 #!/usr/bin/env python
 import os
@@ -87,9 +84,7 @@ connection.close()
 
 
 # find . -name ".DS_Store" -delete
-# python3 code/record_linkage/task_anonymeter.py  --input_folder "data/deep_learningk2"
-# python3 code/record_linkage/task_anonymeter.py  --input_folder "data/PPT_transformed/PPT_train"
-# python3 code/record_linkage/worker_anonymeter.py --type "PPT" --input_folder "data/PPT_transformed/PPT_train" --output_folder "output/anonymeter/PPT_ARX"
-# python3 code/record_linkage/worker_anonymeter.py --type "city" --input_folder "data/synthcityk2" --output_folder "output/anonymeter/synthcityk2"
-# python3 code/record_linkage/worker_anonymeter.py --type "sdv" --input_folder "data/deep_learningk2" --output_folder "output/anonymeter/deep_learningk2"
-# python3 code/record_linkage/worker_anonymeter.py --type "privsmote" --input_folder "data/PrivateSMOTEk2" --output_folder "output/anonymeter/PrivateSMOTEk2"
+# python3 code/record_linkage/task_anonymeter.py  --input_folder "data/synthcity"
+# python3 code/record_linkage/worker_anonymeter.py --type "city" --input_folder "data/synthcity" --output_folder "output/anonymeter/synthcity"
+# python3 code/record_linkage/worker_anonymeter.py --type "sdv" --input_folder "data/deep_learning" --output_folder "output/anonymeter/deep_learning"
+# python3 code/record_linkage/worker_anonymeter.py --type "privsmote" --input_folder "data/PrivateSMOTE" --output_folder "output/anonymeter/PrivateSMOTE"

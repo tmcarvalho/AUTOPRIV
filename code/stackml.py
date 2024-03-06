@@ -93,12 +93,13 @@ def main():
     encode(unseen_data, label_encoder)
 
     # Train linear regression model for predictive performance
-    lr_performance = Ridge()
+    random_seed = 42 
+    lr_performance = Ridge(random_seed=random_seed)
     lr_performance.fit(train_metafeatures, roc_auc)
     predictions_performance = lr_performance.predict(unseen_data.values)
 
     # Train linear regression model for linkability
-    lr_linkability = Ridge()
+    lr_linkability = Ridge(random_seed=random_seed)
     lr_linkability.fit(train_metafeatures, linkability)
     predictions_linkability = lr_linkability.predict(unseen_data.values)
 

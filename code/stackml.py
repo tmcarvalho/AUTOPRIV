@@ -118,13 +118,11 @@ def main():
     pred_linkability = pd.DataFrame(predictions_linkability, columns=['Predictions Linkability'])
     output = pd.concat([unseen_data.iloc[:,92:], pred_performance, pred_linkability], axis=1)
     output['technique'] = label_encoder.inverse_transform(output['technique'])
-    output = output.sort_values(by=['Predictions Performance'], ascending=False)
-
-    # Print or further process the output as needed
-    print(output)
+    print(output.sort_values(by=['Predictions Performance'], ascending=False))
 
     output['rank'] = calculate_rank(pred_performance['Predictions Performance'].values, pred_linkability['Predictions Linkability'].values)
-    print(output.sort_values(by=['rank'], ascending=False))
+    print(output)
+    # output.to_csv(f'{os.getcwd()}/output_analysis/predictions.csv', index=False)
 
 if __name__ == "__main__":
     main()

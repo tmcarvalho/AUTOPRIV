@@ -52,6 +52,15 @@ def extract_metafeatures(unseen_dataset):
     unseen_metafeatures = pd.DataFrame(ft[1:], columns=ft[0])
     return unseen_metafeatures
 
+def calculate_rank(predictions_performance, predictions_linkability):
+    # Calculate ranks for performance and linkability
+    rank_performance = pd.Series(predictions_performance).rank(pct=True)
+    rank_linkability = pd.Series(predictions_linkability).rank(pct=True, ascending=False)  # Set ascending=False for inverse ranking
+
+    # Calculate mean rank of performance and linkability
+    mean_rank = (rank_performance + rank_linkability) / 2
+    return mean_rank
+
 def main():
     nan_to_keep = ['QI', 'epochs', 'batch', 'knn', 'per', 'epsilon']
     label_encoder = LabelEncoder()
@@ -93,13 +102,14 @@ def main():
     encode(unseen_data, label_encoder)
 
     # Train linear regression model for predictive performance
-    random_seed = 42 
-    lr_performance = Ridge(random_seed=random_seed)
+    # Set random seed for reproducibility
+    # np.random.seed(42)
+    lr_performance = Ridge()
     lr_performance.fit(train_metafeatures, roc_auc)
     predictions_performance = lr_performance.predict(unseen_data.values)
 
     # Train linear regression model for linkability
-    lr_linkability = Ridge(random_seed=random_seed)
+    lr_linkability = Ridge()
     lr_linkability.fit(train_metafeatures, linkability)
     predictions_linkability = lr_linkability.predict(unseen_data.values)
 
@@ -112,6 +122,9 @@ def main():
 
     # Print or further process the output as needed
     print(output)
+
+    output['rank'] = calculate_rank(pred_performance['Predictions Performance'].values, pred_linkability['Predictions Linkability'].values)
+    print(output.sort_values(by=['rank'], ascending=False))
 
 if __name__ == "__main__":
     main()

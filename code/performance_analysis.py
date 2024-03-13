@@ -72,9 +72,7 @@ def join_allresults(folder, technique):
 # %% Baeys optimization
 BO_folder = '../output/modelingBO/'
 deeplearnCVBO, deeplearn_testBO = join_allresults(BO_folder, 'deep_learning')
-#%%
 privatesmoteCVBO, privatesmote_testBO = join_allresults(BO_folder, 'PrivateSMOTE')
-#%%
 cityCVBO, city_testBO = join_allresults(BO_folder, 'synthcity')
 origCVBO, orig_testBO = join_allresults(BO_folder, 'original')
 
@@ -245,7 +243,7 @@ plt.xlabel("")
 plt.ylabel("Time (min)")
 sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transformations', borderaxespad=0., frameon=False)
 plt.show()
-# figure = ax.get_figure()
-# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/timeCV_optypek3_tech.pdf', bbox_inches='tight')
+figure = ax.get_figure()
+figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/timeCV_optypek3_tech.pdf', bbox_inches='tight')
 
 # %%

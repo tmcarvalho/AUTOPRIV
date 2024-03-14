@@ -39,7 +39,7 @@ linkability_results = pd.read_csv(f'{os.path.dirname(os.getcwd())}/output_analys
 all_metaft = []
 
 for idx in performance_results.index:
-    if performance_results.opt_type[idx] == 'Hyperband':
+    if performance_results.opt_type[idx] == 'Halving':
         metaft = meta_features(performance_results.ds_complete[idx])
         try:
             linkability_file = linkability_results.loc[(linkability_results.ds_complete == performance_results.ds_complete[idx])].reset_index(drop=True)
@@ -78,9 +78,10 @@ end_cols = ['linkability_score', 'test_roc_auc']
 other_cols = [col for col in metaft_df.columns if col not in end_cols]
 metaft_df = metaft_df[other_cols + end_cols]
 # %%
-# metaft_df.to_csv('../output_analysis/metaftk3.csv', index=False)
+metaft_df.to_csv('../output_analysis/metaftk3_halving.csv', index=False)
 
-# TODO: metadf have 4505 should have 4770: validate this! if any is missing, run ONLY the remaining
+# TODO: metadf_hyperband have 4505 should have 4770: validate this! if any is missing, run ONLY the remaining
+# TODO: metadf_halving have 4651
 # %%
 
 # allmfe = MFE(groups="all", summary="all")

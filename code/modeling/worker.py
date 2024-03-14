@@ -34,6 +34,7 @@ def ack_message(ch, delivery_tag, work_success):
         pass
 
 def modeling_(file):
+    # if file!='ds14_pategan_QI2_epo200_bs100_epi0.1':
     success = modeling(file, args)
     return success
 
@@ -78,14 +79,10 @@ connection.close()
 # python3 code/modeling/task.py --input_folder "data/PPT_transformed/PPT_train"
 # python3 code/modeling/task.py --input_folder "data/PrivateSMOTE"
 # python3 code/modeling/task.py --input_folder "data/original"
+# python3 code/modeling/task.py --input_folder "data/synthcity"
 # python3 code/modeling/task.py --input_folder "data/deep_learning"
 # python3 code/modeling/worker.py --type "ppt" --opt "BO" --input_folder "data/PPT_transformed/PPT_train" --output_folder "output/modelingBO/PPT_ARX"
-# python3 code/modeling/worker.py --type "ppt" --opt "RS" --input_folder "data/PPT_transformed/PPT_train" --output_folder "output/modelingRS/PPT_ARX"
 # python3 code/modeling/worker.py --type "gans" --opt "BO" --input_folder "data/deep_learning" --output_folder "output/modelingBO/deep_learning"
-# python3 code/modeling/worker.py --type "gans" --opt "HB" --input_folder "data/deep_learning" --output_folder "output/modelingHB/deep_learning"
-# python3 code/modeling/worker.py --type "gans" --opt "SH" --input_folder "data/deep_learning" --output_folder "output/modelingSH/deep_learning"
-# python3 code/modeling/worker.py --type "gans" --opt "GS" --input_folder "data/deep_learning" --output_folder "output/modelingGS/deep_learning"
-# python3 code/modeling/worker.py --type "gans" --opt "RS" --input_folder "data/deep_learning" --output_folder "output/modelingRS/deep_learning"
-# python3 code/modeling/worker.py --type "PrivateSMOTE" --opt "RS" --input_folder "data/PrivateSMOTE" --output_folder "output/modelingRS/PrivateSMOTE"
-# python3 code/modeling/worker.py --type "synthcity" --opt "RS" --input_folder "data/synthcityk2" --output_folder "output/modelingRS/synthcityk2"
+# python3 code/modeling/worker.py --type "PrivateSMOTE" --opt "BO" --input_folder "data/PrivateSMOTE" --output_folder "output/modelingBO/PrivateSMOTE"
+# python3 code/modeling/worker.py --type "synthcity" --opt "BO" --input_folder "data/synthcity" --output_folder "output/modelingBO/synthcity"
 # python3 code/modeling/worker.py --type "original" --opt "HB" --input_folder "data/original" --output_folder "output/modelingHB/original"

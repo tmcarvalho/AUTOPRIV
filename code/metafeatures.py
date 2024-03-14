@@ -8,18 +8,14 @@ deepl = ['TVAE', 'CopulaGAN', 'CTGAN']
 city = ['pategan', 'dpgan']
 
 def meta_features(file):
-    #try:
     if any(word in file for word in deepl):
         data = pd.read_csv(f'{os.path.dirname(os.getcwd())}/data/deep_learning/{file}')
         X, y = data.iloc[:, :-1].values, data.iloc[:, -1].values
-        #pass
-    # print(file)
-    #print(any(word in file for word in city))
+
     if 'privateSMOTE' in file:
-        #print("ENTREI")
         data = pd.read_csv(f'{os.path.dirname(os.getcwd())}/data/PrivateSMOTE/{file}')
         X, y = data.iloc[:, :-2].values, data.iloc[:, -2].values
-        #pass
+
     if any(word in file for word in city):
         data = pd.read_csv(f'{os.path.dirname(os.getcwd())}/data/synthcity/{file}')
         X, y = data.iloc[:, :-1].values, data.iloc[:, -1].values
@@ -31,7 +27,6 @@ def meta_features(file):
     ftdf = pd.DataFrame(ft[1:], columns=ft[0])
 
     return ftdf
-    # except: pass
 
 # %% get only the best optimisation type and store linkability and roc auc results
 performance_results = pd.read_csv(f'{os.path.dirname(os.getcwd())}/output_analysis/results_test.csv')

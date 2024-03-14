@@ -8,11 +8,12 @@ import numpy as np
 import seaborn as sns
 from matplotlib import pyplot as plt
 
-# %% 
 # %%
 results_cv = pd.read_csv('../output_analysis/resultsCV.csv')
 results_test = pd.read_csv('../output_analysis/results_test.csv')
-
+# %%
+results_cv["technique"]=results_cv["technique"].str.replace('PATEGAN', 'PATE-GAN')
+results_test["technique"]=results_test["technique"].str.replace('PATEGAN', 'PATE-GAN')
 # %% remove datasets that failed to produce synthcity variants due to a low number of singleouts
 # remove_ds = ['ds8', 'ds32', 'ds24', 'ds2', 'ds59']
 # remove_ds = ['ds2', 'ds59', 'ds56', 'ds55', 'ds51', 'ds50', 'ds38', 'ds37', 'ds33']
@@ -26,7 +27,7 @@ PROPS = {
     'capprops':{'color':'black'}
 }
 color_techniques = ['#26C6DA', '#AB47BC', '#FFA000', '#FFEB3B', '#9CCC65', '#E91E63']
-order_technique = ['Copula GAN', 'TVAE', 'CTGAN', 'DPGAN', 'PATEGAN', r'$\epsilon$-PrivateSMOTE']
+order_technique = ['Copula GAN', 'TVAE', 'CTGAN', 'DPGAN', 'PATE-GAN', r'$\epsilon$-PrivateSMOTE']
 order_optype = ['GridSearch', 'RandomSearch', 'Bayes', 'Halving', 'Hyperband']
 # %% ROC AUC in Cross Validation
 sns.set_style("darkgrid")
@@ -40,8 +41,8 @@ plt.xlabel("")
 plt.ylabel("Percentage difference of \n predictive performance (AUC)")
 sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transformations', borderaxespad=0., frameon=False)
 plt.show()
-figure = ax.get_figure()
-figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performanceCV_optypek3.pdf', bbox_inches='tight')
+# figure = ax.get_figure()
+# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performanceCV_optypek3.pdf', bbox_inches='tight')
 
 # %% ROC AUC in out of sample
 sns.set_style("darkgrid")
@@ -54,8 +55,8 @@ plt.xlabel("")
 plt.ylabel("Percentage difference of \n predictive performance (AUC)")
 sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transformations', borderaxespad=0., frameon=False)
 plt.show()
-figure = ax.get_figure()
-figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3.pdf', bbox_inches='tight')
+# figure = ax.get_figure()
+# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3.pdf', bbox_inches='tight')
 
 # %% ROC AUC in out of sample -- BEST
 results_test['time'] = results_cv[['time']]
@@ -70,9 +71,9 @@ plt.xlabel("")
 plt.ylabel("Percentage difference of \n predictive performance (AUC)")
 sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transformations', borderaxespad=0., frameon=False)
 plt.show()
-figure = ax.get_figure()
-figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_best.pdf', bbox_inches='tight')
-# %% best in time during CV
+# figure = ax.get_figure()
+# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_best.pdf', bbox_inches='tight')
+# %% best in time during CV per technique
 sns.set_style("darkgrid")
 plt.figure(figsize=(18,10))
 ax = sns.boxplot(data=results_test_best, x='opt_type', y='time', hue='technique',
@@ -84,9 +85,22 @@ plt.ylabel("Time (min)")
 sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transformations', borderaxespad=0., frameon=False)
 plt.show()
 figure = ax.get_figure()
-figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_best_time.pdf', bbox_inches='tight')
+figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_tech_best_time.pdf', bbox_inches='tight')
 
-# %% fit time in CV for all
+# %% best in time during CV per opt
+sns.set_style("darkgrid")
+plt.figure(figsize=(18,10))
+ax = sns.boxplot(data=results_test_best, x='opt_type', y='time',
+                 order=order_optype, **PROPS)
+sns.set(font_scale=2.2)
+plt.xticks(rotation=45)
+plt.xlabel("")
+plt.ylabel("Time (min)")
+plt.show()
+# figure = ax.get_figure()
+# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_best_time.pdf', bbox_inches='tight')
+
+# %% fit time (from sklearn) in CV for all
 sns.set_style("darkgrid")
 plt.figure(figsize=(15,8))
 ax = sns.boxplot(data=results_cv, x='opt_type', y='fit_time_sum',
@@ -96,10 +110,10 @@ plt.xticks(rotation=45)
 plt.xlabel("")
 plt.ylabel("Time (min)")
 plt.show()
-figure = ax.get_figure()
-figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/fittimeCV_optypek3.pdf', bbox_inches='tight')
+# figure = ax.get_figure()
+# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/fittimeCV_optypek3.pdf', bbox_inches='tight')
 
-# %% time during all processes in CV
+# %% time during all processes (our time) in CV for all
 sns.set_style("darkgrid")
 plt.figure(figsize=(15,8))
 ax = sns.boxplot(data=results_cv, x='opt_type', y='time',
@@ -109,8 +123,8 @@ plt.xticks(rotation=45)
 plt.xlabel("")
 plt.ylabel("Time (min)")
 plt.show()
-figure = ax.get_figure()
-figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/timeCV_optypek3.pdf', bbox_inches='tight')
+# figure = ax.get_figure()
+# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/timeCV_optypek3.pdf', bbox_inches='tight')
 
 # %% time during all processes in CV per each technique
 sns.set_style("darkgrid")
@@ -123,7 +137,7 @@ plt.xlabel("")
 plt.ylabel("Time (min)")
 sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transformations', borderaxespad=0., frameon=False)
 plt.show()
-figure = ax.get_figure()
-figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/timeCV_optypek3_tech.pdf', bbox_inches='tight')
+# figure = ax.get_figure()
+# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/timeCV_optypek3_tech.pdf', bbox_inches='tight')
 
 # %%

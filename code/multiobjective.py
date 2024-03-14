@@ -95,7 +95,7 @@ plt.ylabel('Linkability Predictions')
 # plt.title('Pareto Front Analysis')
 plt.legend()
 plt.grid(True)
-plt.show()
+# plt.show()
 plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/pareto.pdf', bbox_inches='tight')
 
 #plt.xticks(np.arange(min(predictions['Predictions Performance']), max(predictions['Predictions Performance'])+0.001, 0.001))

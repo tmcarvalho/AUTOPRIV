@@ -163,7 +163,57 @@ sns.move_legend(axes[0], bbox_to_anchor=(1.35,0),loc='center right', title='Tran
 axes[1].get_legend().set_visible(False)
 axes[0].use_sticky_edges = False
 axes[1].use_sticky_edges = False
-# plt.savefig(f'{os.path.dirname(os.getcwd())}/plots/performance_risk.pdf', bbox_inches='tight')
+# plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performance_time.pdf', bbox_inches='tight')
 
+# %% best in out of sample + risk + time in CV
+results_test_best_risk = results_test_best.merge(priv_results, how='left', on=['ds_complete', 'technique'])
+# %%
+sns.set_style("darkgrid")
+fig, axes = plt.subplots(3, 1, figsize=(15.5,20))
+sns.boxplot(ax=axes[0], data=results_test_best_risk,x='opt_type',y='roc_auc_perdif', hue='technique',
+            order=order_optype, hue_order=order_technique, palette=color_techniques)
+sns.boxplot(ax=axes[1], data=results_test_best_risk,x='opt_type',y='time', hue='technique',
+    order=order_optype, hue_order=order_technique, palette=color_techniques)
+sns.boxplot(ax=axes[2], data=results_test_best_risk,x='opt_type',y='value', hue='technique',
+    order=order_optype, hue_order=order_technique, palette=color_techniques)
+sns.set(font_scale=2)
+axes[0].set_ylabel("Percentage difference of \n predictive performance (AUC)")
+axes[0].set_xlabel("")
+axes[0].set_xticklabels("")
+axes[1].set_ylabel("Time (min)")
+axes[1].set_xlabel("")
+axes[1].set_xticklabels("")
+axes[2].set_ylabel("Privacy Risk (Linkability)")
+axes[2].set_xlabel("")
+axes[2].set_xticklabels(axes[2].get_xticklabels(), rotation=60)
+sns.move_legend(axes[1], bbox_to_anchor=(1.35,0.5), loc='right', title='Transformations', borderaxespad=0., frameon=False)
+axes[0].get_legend().set_visible(False)
+axes[2].get_legend().set_visible(False)
+axes[0].use_sticky_edges = False
+axes[1].use_sticky_edges = False
+axes[2].use_sticky_edges = False
+# plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performance_time_risk.pdf', bbox_inches='tight')
+
+# %% best in out of sample + Risk
+sns.set_style("darkgrid")
+fig, axes = plt.subplots(2, 1, figsize=(16,17))
+sns.boxplot(ax=axes[0], data=results_test_best_risk,x='opt_type',y='roc_auc_perdif', hue='technique',
+            order=order_optype, hue_order=order_technique, palette=color_techniques)
+sns.boxplot(ax=axes[1], data=results_test_best_risk,x='opt_type',y='value', hue='technique',
+    order=order_optype, hue_order=order_technique, palette=color_techniques)
+sns.set(font_scale=2.4)
+# sns.light_palette("seagreen", as_cmap=True)
+axes[0].set_ylabel("Percentage difference of \n predictive performance (AUC)")
+axes[0].set_xlabel("")
+axes[0].set_xticklabels("")
+#axes[0].set_xticklabels(axes[0].get_xticklabels(), rotation=60)
+axes[1].set_ylabel("Privacy Risk (Linkability)")
+axes[1].set_xlabel("")
+axes[1].set_xticklabels(axes[1].get_xticklabels(), rotation=60)
+sns.move_legend(axes[0], bbox_to_anchor=(1.35,0),loc='center right', title='Transformations', borderaxespad=0., frameon=False)
+axes[1].get_legend().set_visible(False)
+axes[0].use_sticky_edges = False
+axes[1].use_sticky_edges = False
+# plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performance_risk.pdf', bbox_inches='tight')
 
 # %%

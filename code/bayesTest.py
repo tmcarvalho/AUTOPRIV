@@ -9,10 +9,8 @@ import matplotlib.pyplot as plt
 # %% 
 # percentage difference in out of sample setting
 results_test = pd.read_csv(f'{os.path.dirname(os.getcwd())}/output_analysis/results_test.csv')
-predictions = pd.read_csv(f'{os.path.dirname(os.getcwd())}/output_analysis/predictions.csv')
 # %%
 results_test.loc[results_test['technique']=='PATEGAN', 'technique'] = 'PATE-GAN'
-predictions.loc[predictions['technique']=='PATEGAN', 'technique'] = 'PATE-GAN'
 # %%
 
 def bayesian_sign_test(diff_vector, rope_min, rope_max):

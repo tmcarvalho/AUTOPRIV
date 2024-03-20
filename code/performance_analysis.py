@@ -4,16 +4,17 @@ This script will analyse the predictive performance in the out-of-sample.
 # %%
 import os
 import pandas as pd
-import numpy as np
 import seaborn as sns
 from matplotlib import pyplot as plt
 
 # %%
 results_cv = pd.read_csv('../output_analysis/resultsCV.csv')
 results_test = pd.read_csv('../output_analysis/results_test.csv')
+priv_results = pd.read_csv('../output_analysis/anonymeterk3.csv')
 # %%
 results_cv["technique"]=results_cv["technique"].str.replace('PATEGAN', 'PATE-GAN')
 results_test["technique"]=results_test["technique"].str.replace('PATEGAN', 'PATE-GAN')
+priv_results["technique"]=priv_results["technique"].str.replace('PATEGAN', 'PATE-GAN')
 # %% remove datasets that failed to produce synthcity variants due to a low number of singleouts
 # remove_ds = ['ds8', 'ds32', 'ds24', 'ds2', 'ds59']
 # remove_ds = ['ds2', 'ds59', 'ds56', 'ds55', 'ds51', 'ds50', 'ds38', 'ds37', 'ds33']
@@ -26,6 +27,7 @@ PROPS = {
     'whiskerprops':{'color':'black'},
     'capprops':{'color':'black'}
 }
+
 color_techniques = ['#26C6DA', '#AB47BC', '#FFA000', '#FFEB3B', '#9CCC65', '#E91E63']
 order_technique = ['Copula GAN', 'TVAE', 'CTGAN', 'DPGAN', 'PATE-GAN', r'$\epsilon$-PrivateSMOTE']
 order_optype = ['GridSearch', 'RandomSearch', 'Bayes', 'Halving', 'Hyperband']
@@ -73,6 +75,7 @@ sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transforma
 plt.show()
 # figure = ax.get_figure()
 # figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_best.pdf', bbox_inches='tight')
+
 # %% best in time during CV per technique
 sns.set_style("darkgrid")
 plt.figure(figsize=(18,10))
@@ -139,5 +142,28 @@ sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transforma
 plt.show()
 # figure = ax.get_figure()
 # figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/timeCV_optypek3_tech.pdf', bbox_inches='tight')
+
+# %% best in out of sample + time in CV
+sns.set_style("darkgrid")
+fig, axes = plt.subplots(2, 1, figsize=(16,17))
+sns.boxplot(ax=axes[0], data=results_test_best,x='opt_type',y='roc_auc_perdif', hue='technique',
+            order=order_optype, hue_order=order_technique, palette=color_techniques)
+sns.boxplot(ax=axes[1], data=results_test_best,x='opt_type',y='time', hue='technique',
+    order=order_optype, hue_order=order_technique, palette=color_techniques)
+sns.set(font_scale=2.4)
+# sns.light_palette("seagreen", as_cmap=True)
+axes[0].set_ylabel("Percentage difference of \n predictive performance (AUC)")
+axes[0].set_xlabel("")
+axes[0].set_xticklabels("")
+#axes[0].set_xticklabels(axes[0].get_xticklabels(), rotation=60)
+axes[1].set_ylabel("Time (min)")
+axes[1].set_xlabel("")
+axes[1].set_xticklabels(axes[1].get_xticklabels(), rotation=60)
+sns.move_legend(axes[0], bbox_to_anchor=(1.35,0),loc='center right', title='Transformations', borderaxespad=0., frameon=False)
+axes[1].get_legend().set_visible(False)
+axes[0].use_sticky_edges = False
+axes[1].use_sticky_edges = False
+# plt.savefig(f'{os.path.dirname(os.getcwd())}/plots/performance_risk.pdf', bbox_inches='tight')
+
 
 # %%

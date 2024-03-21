@@ -66,7 +66,7 @@ plt.show()
 # figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3.pdf', bbox_inches='tight')
 # %%
 g = sns.catplot(data=results_test, x="technique", y="roc_auc_perdif", hue='technique',
-            order=order_technique, hue_order=order_technique,col="opt_type", height=7.8,aspect=.6, 
+            order=order_technique, hue_order=order_technique,col="opt_type", height=7.3,aspect=.48, 
             palette=color_techniques, col_order=order_optype, legend=True,
             kind='boxen')
 g.set_titles(template='{col_name}')
@@ -75,7 +75,10 @@ g.set_xlabels('')
 g.set_ylabels("Percentage difference of \n predictive performance (AUC)")
 plt.subplots_adjust(wspace = 0.1)
 g.legend.set_title('Transformation')
+sns.set(font_scale=2)
 #g.fig.tight_layout()
+# plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_grid.pdf', bbox_inches='tight')
+
 # %% ROC AUC in out of sample -- BEST
 results_test['time'] = results_cv[['time']]
 results_test_best = results_test.loc[results_test.groupby(['ds', 'technique', 'opt_type'])['roc_auc_perdif'].idxmax()]

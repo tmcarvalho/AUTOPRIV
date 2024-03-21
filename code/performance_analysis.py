@@ -103,8 +103,7 @@ g.set_ylabels("Percentage difference of \n predictive performance (AUC)")
 plt.subplots_adjust(wspace = 0.04)
 g.legend.set_title('Transformation')
 sns.set(font_scale=2)
-#figure = ax.get_figure()
-#figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_best_grid.pdf', bbox_inches='tight')
+# plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_best_grid.pdf', bbox_inches='tight')
 
 # %% best in time during CV per technique
 sns.set_style("darkgrid")

@@ -105,11 +105,13 @@ def main():
     # Train linear regression model for predictive performance
     lr_performance = Ridge(random_state=42)
     lr_performance.fit(train_metafeatures, roc_auc)
+    print("Performance traning score: ", lr_performance.score(train_metafeatures, roc_auc))
     predictions_performance = lr_performance.predict(unseen_data.values)
-
+    
     # Train linear regression model for linkability
     lr_linkability = Ridge(random_state=42)
     lr_linkability.fit(train_metafeatures, linkability)
+    print("Linkability traning score: ", lr_linkability.score(train_metafeatures, linkability))
     predictions_linkability = lr_linkability.predict(unseen_data.values)
 
     # Create DataFrame with predictions

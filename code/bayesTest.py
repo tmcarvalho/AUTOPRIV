@@ -11,6 +11,9 @@ import matplotlib.pyplot as plt
 results_test = pd.read_csv(f'{os.path.dirname(os.getcwd())}/output_analysis/results_test.csv')
 # %%
 results_test.loc[results_test['technique']=='PATEGAN', 'technique'] = 'PATE-GAN'
+results_test["opt_type"]=results_test["opt_type"].str.replace('RandomSearch', 'Random Search')
+results_test["opt_type"]=results_test["opt_type"].str.replace('GridSearch', 'Grid Search')
+
 # %%
 
 def bayesian_sign_test(diff_vector, rope_min, rope_max):
@@ -64,7 +67,7 @@ def sorter(column):
 
 def sorter_optype(column):
     reorder = [
-        'GridSearch', 'RandomSearch', 'Bayes', 'Halving', 'Hyperband'
+        'Grid Search', 'Random Search', 'Bayes', 'Halving', 'Hyperband'
     ]
     cat = pd.Categorical(column, categories=reorder, ordered=True)
     return pd.Series(cat)
@@ -111,7 +114,7 @@ def visualize_data(best_optype_performance, metric_column, type_, plot_name):
 
 # %% # Is there any solution that is always better?
 # Grid Search
-gridsearch = filter_data(results_test, 'GridSearch')
+gridsearch = filter_data(results_test, 'Grid Search')
 best_performance = calculate_performance_difference(gridsearch)
 visualize_data(best_performance,'test_roc_auc_perdif_oracle', 'technique', 'bayes_gridsearch')
 # %% Halving
@@ -127,7 +130,7 @@ def calculate_performance_difference_optype(optsearch):
     """Calculate performance difference compared to the best overall performance."""
     best_optype_performance = optsearch.loc[optsearch.groupby(['ds', 'opt_type'])['test_roc_auc_oracle'].idxmax()].reset_index(drop=True)
     oracle_performance = best_optype_performance.loc[best_optype_performance.groupby(['ds'])["test_roc_auc_oracle"].idxmax()].reset_index(drop=True)
-    print(best_optype_performance)
+    # print(best_optype_performance)
     best_optype_performance['test_roc_auc_perdif_oracle'] = None
     for i in range(len(best_optype_performance)):
         ds_oracle = oracle_performance.loc[(best_optype_performance.at[i,'ds'] == oracle_performance.ds),:].reset_index(drop=True)

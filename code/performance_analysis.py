@@ -15,6 +15,11 @@ priv_results = pd.read_csv('../output_analysis/anonymeterk3.csv')
 results_cv["technique"]=results_cv["technique"].str.replace('PATEGAN', 'PATE-GAN')
 results_test["technique"]=results_test["technique"].str.replace('PATEGAN', 'PATE-GAN')
 priv_results["technique"]=priv_results["technique"].str.replace('PATEGAN', 'PATE-GAN')
+
+results_cv["opt_type"]=results_cv["opt_type"].str.replace('RandomSearch', 'Random Search')
+results_test["opt_type"]=results_test["opt_type"].str.replace('RandomSearch', 'Random Search')
+results_cv["opt_type"]=results_cv["opt_type"].str.replace('GridSearch', 'Grid Search')
+results_test["opt_type"]=results_test["opt_type"].str.replace('GridSearch', 'Grid Search')
 # %% remove datasets that failed to produce synthcity variants due to a low number of singleouts
 # remove_ds = ['ds8', 'ds32', 'ds24', 'ds2', 'ds59']
 # remove_ds = ['ds2', 'ds59', 'ds56', 'ds55', 'ds51', 'ds50', 'ds38', 'ds37', 'ds33']
@@ -30,7 +35,7 @@ PROPS = {
 
 color_techniques = ['#26C6DA', '#AB47BC', '#FFA000', '#FFEB3B', '#9CCC65', '#E91E63']
 order_technique = ['Copula GAN', 'TVAE', 'CTGAN', 'DPGAN', 'PATE-GAN', r'$\epsilon$-PrivateSMOTE']
-order_optype = ['GridSearch', 'RandomSearch', 'Bayes', 'Halving', 'Hyperband']
+order_optype = ['Grid Search', 'Random Search', 'Bayes', 'Halving', 'Hyperband']
 # %% ROC AUC in Cross Validation
 sns.set_style("darkgrid")
 plt.figure(figsize=(18,10))
@@ -49,7 +54,7 @@ plt.show()
 # %% ROC AUC in out of sample
 sns.set_style("darkgrid")
 plt.figure(figsize=(18,10))
-ax = sns.boxplot(data=results_test, x='opt_type', y='roc_auc_perdif', hue='technique',
+ax = sns.boxenplot(data=results_test, x='opt_type', y='roc_auc_perdif', hue='technique',
                  order=order_optype, hue_order=order_technique, palette=color_techniques)
 sns.set(font_scale=2.2)
 plt.xticks(rotation=45)
@@ -59,7 +64,18 @@ sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transforma
 plt.show()
 # figure = ax.get_figure()
 # figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3.pdf', bbox_inches='tight')
-
+# %%
+g = sns.catplot(data=results_test, x="technique", y="roc_auc_perdif", hue='technique',
+            order=order_technique, hue_order=order_technique,col="opt_type", height=7.8,aspect=.6, 
+            palette=color_techniques, col_order=order_optype, legend=True,
+            kind='boxen')
+g.set_titles(template='{col_name}')
+g.set_xticklabels('')
+g.set_xlabels('')
+g.set_ylabels("Percentage difference of \n predictive performance (AUC)")
+plt.subplots_adjust(wspace = 0.1)
+g.legend.set_title('Transformation')
+#g.fig.tight_layout()
 # %% ROC AUC in out of sample -- BEST
 results_test['time'] = results_cv[['time']]
 results_test_best = results_test.loc[results_test.groupby(['ds', 'technique', 'opt_type'])['roc_auc_perdif'].idxmax()]
@@ -75,6 +91,20 @@ sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transforma
 plt.show()
 # figure = ax.get_figure()
 # figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_best.pdf', bbox_inches='tight')
+# %%
+g = sns.catplot(data=results_test_best, x="technique", y="roc_auc_perdif", hue='technique',
+            order=order_technique, hue_order=order_technique,col="opt_type", height=7.3,aspect=.48, 
+            palette=color_techniques, col_order=order_optype, legend=True,
+            kind='box')
+g.set_titles(template='{col_name}')
+g.set_xticklabels('')
+g.set_xlabels('')
+g.set_ylabels("Percentage difference of \n predictive performance (AUC)")
+plt.subplots_adjust(wspace = 0.04)
+g.legend.set_title('Transformation')
+sns.set(font_scale=2)
+#figure = ax.get_figure()
+#figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_best_grid.pdf', bbox_inches='tight')
 
 # %% best in time during CV per technique
 sns.set_style("darkgrid")

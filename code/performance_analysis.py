@@ -154,6 +154,8 @@ plt.figure(figsize=(15,8))
 ax = sns.boxplot(data=results_cv, x='opt_type', y='time',
                  order=order_optype, **PROPS)
 sns.set(font_scale=1.7)
+plt.yscale('symlog')
+plt.ylim(-0.2,50)
 plt.xticks(rotation=45)
 plt.xlabel("")
 plt.ylabel("Time (min)")

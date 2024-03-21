@@ -119,8 +119,8 @@ plt.xlabel("")
 plt.ylabel("Time (min)")
 sns.move_legend(ax, bbox_to_anchor=(1,0.5), loc='center left', title='Transformations', borderaxespad=0., frameon=False)
 plt.show()
-figure = ax.get_figure()
-figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_tech_best_time.pdf', bbox_inches='tight')
+# figure = ax.get_figure()
+# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_tech_best_time.pdf', bbox_inches='tight')
 
 # %% best in time during CV per opt
 sns.set_style("darkgrid")
@@ -199,7 +199,6 @@ axes[1].use_sticky_edges = False
 
 # %% best in out of sample + risk + time in CV
 results_test_best_risk = results_test_best.merge(priv_results, how='left', on=['ds_complete', 'technique'])
-# %%
 sns.set_style("darkgrid")
 fig, axes = plt.subplots(3, 1, figsize=(15.5,20))
 sns.boxplot(ax=axes[0], data=results_test_best_risk,x='opt_type',y='roc_auc_perdif', hue='technique',
@@ -234,7 +233,6 @@ sns.boxplot(ax=axes[0], data=results_test_best_risk,x='opt_type',y='roc_auc_perd
 sns.boxplot(ax=axes[1], data=results_test_best_risk,x='opt_type',y='value', hue='technique',
     order=order_optype, hue_order=order_technique, palette=color_techniques)
 sns.set(font_scale=2.4)
-# sns.light_palette("seagreen", as_cmap=True)
 axes[0].set_ylabel("Percentage difference of \n predictive performance (AUC)")
 axes[0].set_xlabel("")
 axes[0].set_xticklabels("")

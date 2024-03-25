@@ -75,8 +75,8 @@ g.set_xlabels('')
 g.set_ylabels("Percentage difference of \n predictive performance (AUC)")
 plt.subplots_adjust(wspace = 0.1)
 g.legend.set_title('Transformation')
-sns.set(font_scale=2)
-#g.fig.tight_layout()
+sns.set(font_scale=1.8)
+# g.fig.tight_layout()
 # plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_grid.pdf', bbox_inches='tight')
 
 # %% ROC AUC in out of sample -- BEST
@@ -105,7 +105,7 @@ g.set_xlabels('')
 g.set_ylabels("Percentage difference of \n predictive performance (AUC)")
 plt.subplots_adjust(wspace = 0.04)
 g.legend.set_title('Transformation')
-sns.set(font_scale=2)
+sns.set(font_scale=1.8)
 # plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_best_grid.pdf', bbox_inches='tight')
 
 # %% best in time during CV per technique
@@ -256,7 +256,7 @@ g = sns.catplot(data=results_test_best_risk, x="technique", y="value", hue='tech
             palette=color_techniques, col_order=order_optype, legend=True,
             kind='box',ax=axes[0])
 
-sns.set(font_scale=2)
+sns.set(font_scale=1.8)
 g.set_titles(template='{col_name}')
 g.set_xticklabels('')
 g.set_xlabels('')

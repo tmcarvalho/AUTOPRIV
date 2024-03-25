@@ -249,3 +249,18 @@ axes[1].use_sticky_edges = False
 # plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performance_risk.pdf', bbox_inches='tight')
 
 # %%
+g = sns.catplot(data=results_test_best_risk, x="technique", y="value", hue='technique',
+            order=order_technique, hue_order=order_technique,col="opt_type", height=7.3,aspect=.48, 
+            palette=color_techniques, col_order=order_optype, legend=True,
+            kind='box',ax=axes[0])
+
+sns.set(font_scale=2)
+g.set_titles(template='{col_name}')
+g.set_xticklabels('')
+g.set_xlabels('')
+g.set_ylabels("Privacy Risk \n (Linkability)")
+plt.subplots_adjust(wspace = 0.04)
+g.legend.set_title('Transformation')
+# plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_risk_optypek3_best_grid.pdf', bbox_inches='tight')
+
+# %%

@@ -8,9 +8,9 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 
 # %%
-results_cv = pd.read_csv('../output_analysis/resultsCV.csv')
-results_test = pd.read_csv('../output_analysis/results_test.csv')
-priv_results = pd.read_csv('../output_analysis/anonymeterk3.csv')
+results_cv = pd.read_csv(f'{os.getcwd()}/output_analysis/resultsCV.csv')
+results_test = pd.read_csv(f'{os.getcwd()}/output_analysis/results_test.csv')
+priv_results = pd.read_csv(f'{os.getcwd()}/output_analysis/anonymeterk3.csv')
 # %%
 results_cv["technique"]=results_cv["technique"].str.replace('PATEGAN', 'PATE-GAN')
 results_test["technique"]=results_test["technique"].str.replace('PATEGAN', 'PATE-GAN')
@@ -124,10 +124,10 @@ plt.show()
 
 # %% best in time during CV per opt
 sns.set_style("darkgrid")
-plt.figure(figsize=(18,10))
+plt.figure(figsize=(12,7))
 ax = sns.boxplot(data=results_test_best, x='opt_type', y='time',
                  order=order_optype, **PROPS)
-sns.set(font_scale=2.4)
+sns.set(font_scale=2.1)
 plt.xticks(rotation=45)
 plt.yscale('symlog')
 plt.ylim(-0.02,20)
@@ -135,7 +135,7 @@ plt.xlabel("")
 plt.ylabel("Time (min)")
 plt.show()
 # figure = ax.get_figure()
-# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_best_time.pdf', bbox_inches='tight')
+# figure.savefig(f'{os.getcwd()}/output_analysis/plots/performancetest_optypek3_best_time.pdf', bbox_inches='tight')
 
 # %% fit time (from sklearn) in CV for all
 sns.set_style("darkgrid")

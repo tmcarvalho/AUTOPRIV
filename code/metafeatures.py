@@ -17,29 +17,47 @@ def meta_features(X,y, file):
 
     return ftdf
 
+def create_dataframe(meta_features_list, columns):
+    df = pd.DataFrame(columns=columns)
+    for i, inner_row in enumerate(meta_features_list):
+        df.loc[i] = inner_row.values[0]
+    return df
+
 # %%
-all_metaft = []
+dpl_metaft = []
 files_dpl = os.listdir(f'{os.path.dirname(os.getcwd())}/data/deep_learning/')
 for file in files_dpl:
     data = pd.read_csv(f'{os.path.dirname(os.getcwd())}/data/deep_learning/{file}')
     X, y = data.iloc[:, :-1].values, data.iloc[:, -1].values
-    all_metaft.append(meta_features(X,y, file))
+    dpl_metaft.append(meta_features(X,y, file))
 # %%
+dpl_metaft_df = create_dataframe(dpl_metaft, columns=dpl_metaft[0].columns)
+# %%
+prsmote_metaft = []
 files_prsmote = os.listdir(f'{os.path.dirname(os.getcwd())}/data/PrivateSMOTE/')
 for file in files_prsmote:
     data = pd.read_csv(f'{os.path.dirname(os.getcwd())}/data/PrivateSMOTE/{file}')
     X, y = data.iloc[:, :-2].values, data.iloc[:, -2].values
-    all_metaft.append(meta_features(X,y, file))
+    prsmote_metaft.append(meta_features(X,y, file))
+
 # %%
+prsmote_metaft_df = create_dataframe(prsmote_metaft, columns=prsmote_metaft[0].columns)
+# %%
+city_metaft = []
 files_city = os.listdir(f'{os.path.dirname(os.getcwd())}/data/synthcity/')
 for file in files_city:
     data = pd.read_csv(f'{os.path.dirname(os.getcwd())}/data/synthcity/{file}')
     X, y = data.iloc[:, :-1].values, data.iloc[:, -1].values
-    all_metaft.append(meta_features(X,y, file))
+    city_metaft.append(meta_features(X,y, file))
+
+# %%
+city_metaft_df = create_dataframe(city_metaft, columns=city_metaft[0].columns)
+# %%
+all_metaft_df = pd.concat([dpl_metaft_df,prsmote_metaft_df,city_metaft_df])
 # %% get only the best optimisation type and store linkability and roc auc results
 performance_results = pd.read_csv(f'{os.path.dirname(os.getcwd())}/output_analysis/results_test.csv')
 linkability_results = pd.read_csv(f'{os.path.dirname(os.getcwd())}/output_analysis/anonymeterk3.csv')
-all_metaft_df = pd.DataFrame(all_metaft)
+
 # %% not efficient: read all data in each folder and merge to accuracy and linkability
 metafeatures = performance_results.copy()
 for idx in performance_results.index:

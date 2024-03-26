@@ -18,7 +18,7 @@ results_test["opt_type"]=results_test["opt_type"].str.replace('GridSearch', 'Gri
 
 def bayesian_sign_test(diff_vector, rope_min, rope_max):
     prob_left = np.mean(diff_vector < rope_min)
-    prob_rope = np.mean((diff_vector > rope_min) & (diff_vector < rope_max))
+    prob_rope = np.mean((diff_vector >= rope_min) & (diff_vector <= rope_max))
     prob_right = np.mean(diff_vector > rope_max)
     alpha = [prob_left, prob_rope, prob_right]
     alpha = [a + 0.0001 for a in alpha]

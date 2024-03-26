@@ -99,7 +99,7 @@ def visualize_data(best_optype_performance, metric_column, type_, plot_name):
     solutions_org_candidates = solutions_org_candidates.sort_values(by="Solution", key=sorter)
 
     sns.set_style("darkgrid")
-    fig, ax= plt.subplots(figsize=(8.3, 2.7))
+    fig, ax= plt.subplots(figsize=(8.5, 3))
     sns.histplot(data=solutions_org_candidates, stat='probability', multiple='fill', x='Solution', hue='Result', edgecolor='none',
                 palette = palette_candidates, shrink=0.9, hue_order=['Lose', 'Draw'])
     ax.axhline(0.5, linewidth=0.5, color='lightgrey')
@@ -107,7 +107,7 @@ def visualize_data(best_optype_performance, metric_column, type_, plot_name):
     ax.set_xlabel("")
     ax.set_ylabel('Proportion of probability')
     sns.move_legend(ax, bbox_to_anchor=(0.5,1.23), loc='upper center', borderaxespad=0., ncol=3, frameon=False, title="")         
-    sns.set(font_scale=1.15)
+    sns.set(font_scale=1.35)
     plt.xticks(rotation=45)
     figure = ax.get_figure()
     figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/{plot_name}.pdf', bbox_inches='tight')
@@ -146,7 +146,7 @@ def visualize_data(best_optype_performance, metric_column, type_, plot_name):
     solutions_org_candidates = solutions_org_candidates.sort_values(by="Solution", key=sorter_optype)
 
     sns.set_style("darkgrid")
-    fig, ax= plt.subplots(figsize=(8.3, 2.7))
+    fig, ax= plt.subplots(figsize=(7.5, 3))
     sns.histplot(data=solutions_org_candidates, stat='probability', multiple='fill', x='Solution', hue='Result', edgecolor='none',
                 palette = palette_candidates, shrink=0.9, hue_order=['Lose', 'Draw'])
     ax.axhline(0.5, linewidth=0.5, color='lightgrey')
@@ -154,7 +154,7 @@ def visualize_data(best_optype_performance, metric_column, type_, plot_name):
     ax.set_xlabel("")
     ax.set_ylabel('Proportion of probability')
     sns.move_legend(ax, bbox_to_anchor=(0.5,1.23), loc='upper center', borderaxespad=0., ncol=3, frameon=False, title="")         
-    sns.set(font_scale=1.15)
+    sns.set(font_scale=1.25)
     plt.xticks(rotation=45)
     figure = ax.get_figure()
     figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/{plot_name}.pdf', bbox_inches='tight')

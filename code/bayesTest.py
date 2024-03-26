@@ -48,7 +48,7 @@ def apply_test(candidates, metric, type_):
     return solution_res
 
 def custom_palette(df):
-    custom_palette = {'Win': '#27AE60', 'Draw': '#FBC02D', 'Lose': '#2471A3'}
+    custom_palette = {'Win': '#229954', 'Draw': '#FBC02D', 'Lose': '#2471A3'}
     return {q: custom_palette[q] for q in set(df['Result'])}
 
 def solutions_concat(candidates, metric, type_):
@@ -129,7 +129,9 @@ visualize_data(best_performance,'test_roc_auc_perdif_oracle', 'technique','bayes
 def calculate_performance_difference_optype(optsearch):
     """Calculate performance difference compared to the best overall performance."""
     best_optype_performance = optsearch.loc[optsearch.groupby(['ds', 'opt_type'])['test_roc_auc_oracle'].idxmax()].reset_index(drop=True)
-    oracle_performance = best_optype_performance.loc[best_optype_performance.groupby(['ds'])["test_roc_auc_oracle"].idxmax()].reset_index(drop=True)
+    gridsearch = filter_data(optsearch, 'Grid Search')
+    oracle_performance = gridsearch.loc[gridsearch.groupby(['ds'])["test_roc_auc_oracle"].idxmax()].reset_index(drop=True)
+    # print(oracle_performance)
     # print(best_optype_performance)
     best_optype_performance['test_roc_auc_perdif_oracle'] = None
     for i in range(len(best_optype_performance)):
@@ -144,22 +146,22 @@ def visualize_data(best_optype_performance, metric_column, type_, plot_name):
     solutions_org_candidates, palette_candidates = solutions_concat(best_optype_performance, metric_column, type_)   
     solutions_org_candidates = solutions_org_candidates.reset_index(drop=True)
     solutions_org_candidates = solutions_org_candidates.sort_values(by="Solution", key=sorter_optype)
-
     sns.set_style("darkgrid")
-    fig, ax= plt.subplots(figsize=(7.5, 3))
+    fig, ax= plt.subplots(figsize=(6.8, 2.8))
     sns.histplot(data=solutions_org_candidates, stat='probability', multiple='fill', x='Solution', hue='Result', edgecolor='none',
-                palette = palette_candidates, shrink=0.9, hue_order=['Lose', 'Draw'])
+                palette = palette_candidates, shrink=0.85, hue_order=['Lose', 'Draw', 'Win'])
     ax.axhline(0.5, linewidth=0.5, color='lightgrey')
     ax.margins(x=0.2)
     ax.set_xlabel("")
     ax.set_ylabel('Proportion of probability')
     sns.move_legend(ax, bbox_to_anchor=(0.5,1.23), loc='upper center', borderaxespad=0., ncol=3, frameon=False, title="")         
-    sns.set(font_scale=1.25)
+    sns.set(font_scale=1.2)
     plt.xticks(rotation=45)
     figure = ax.get_figure()
     figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/{plot_name}.pdf', bbox_inches='tight')
 
 # %%
 best_performance = calculate_performance_difference_optype(results_test)
+best_performance = best_performance.loc[best_performance.opt_type!='Grid Search']
 visualize_data(best_performance,'test_roc_auc_perdif_oracle', 'opt_type', 'bayes_optype')
 # %%

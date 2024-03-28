@@ -1,73 +1,12 @@
 # %%
 import os
 import pandas as pd
-import numpy as np
-from pymoo.algorithms.moo.nsga2 import NSGA2
-from pymoo.core.problem import Problem
-from pymoo.optimize import minimize
-from pymoo.termination import get_termination
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 # %%
 # Read data
-predictions = pd.read_csv(f'{os.path.dirname(os.getcwd())}/output_analysis/predictions.csv')
-
-# %%
-# Define the optimization problem
-class PrivacyConfigurationProblem(Problem):
-    def __init__(self, preds):
-        super().__init__(n_var=len(preds), n_obj=2, n_constr=0, xl=0, xu=1)
-        self.preds = preds
-
-    def _evaluate(self, X, out, *args, **kwargs):
-        X = X[:len(self.preds)]
-        print(len(X))
-        # Assign the solutions to the appropriate privacy parameters
-        self.preds['technique'] = X[:, 0]
-        self.preds['epochs'] = X[:, 1]
-        self.preds['batch'] = X[:, 2]
-        self.preds['epsilon'] = X[:, 3]
-        self.preds['knn'] = X[:, 4]
-        self.preds['per'] = X[:, 5]
-
-        objectives = [self.preds['Predictions Performance'].values, -self.preds['Predictions Linkability'].values]
-        out["F"] = np.column_stack(objectives)
-        #out["F"] = objectives
-
-
-# Initialize the problem with training data and unseen data metafeatures
-problem = PrivacyConfigurationProblem(predictions)
-
-# Choose an Optimization Algorithm (NSGA-II)
-algorithm = NSGA2()
-
-# Specify Termination Criteria
-termination = get_termination("n_gen", 100)
-
-# Run the Optimization
-res = minimize(problem,
-               algorithm,
-               termination,
-               seed=1,
-               save_history=True
-               )
-# DOES NOT WORK!!
-# %%
-# Plot all solutions
-plt.figure(figsize=(8, 6))
-plt.scatter(res.F[:,0], res.F[:,1], color='blue')
-plt.title('All Solutions')
-plt.xlabel('Accuracy Distance')
-plt.ylabel('Linkability Distance')
-plt.grid(True)
-
-# Plot the non-dominated solutions
-#non_dominated = res.F[np.where(res.F[:, 0] <= np.min(res.F[:, 0]))]
-#plt.scatter(non_dominated[:,0], non_dominated[:,1], color='red', label='Non-dominated Solutions')
-
-plt.legend()
-plt.show()
+predictions = pd.read_csv(f'{os.path.dirname(os.getcwd())}/output_analysis/predictions_Hyperband.csv')
 
 # %% ########################################
 #           PLOT SIMPLE PARETO FRONT        #
@@ -75,12 +14,12 @@ plt.show()
 # data is ordered by ranking
 # Identify Pareto-optimal solutions
 pareto_front = []
-sorted_predictions = predictions.sort_values(by=['Predictions Linkability'], ascending=True)
+sorted_predictions = predictions.sort_values(by=['Predictions Performance'], ascending=False)
 
-max_performance = float('-inf')
+min_linkability = float('inf')
 for index, row in sorted_predictions.iterrows():
-    if row['Predictions Performance'] >= max_performance:
-        max_performance = row['Predictions Performance']
+    if row['Predictions Linkability'] <= min_linkability:
+        min_linkability = row['Predictions Linkability']
         pareto_front.append(row)
 pareto_front_df = pd.DataFrame(pareto_front)
 # %%
@@ -110,6 +49,6 @@ plt.xlabel('Performance Predictions')
 plt.ylabel('Linkability Predictions')
 plt.legend()
 plt.grid(True)
-# plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/pareto_rank.pdf', bbox_inches='tight')
+# plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/pareto_rank_hyperband.pdf', bbox_inches='tight')
 
 # %%

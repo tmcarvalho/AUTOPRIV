@@ -20,7 +20,11 @@ def meta_features(X,y, file):
 def create_dataframe(meta_features_list, columns):
     df = pd.DataFrame(columns=columns)
     for i, inner_row in enumerate(meta_features_list):
-        df.loc[i] = inner_row.values[0]
+        if set(inner_row.columns)==set(columns):
+            df.loc[i] = inner_row.values[0]
+
+        else:
+            pass # filter synthcity errors
     return df
 
 # %%
@@ -53,46 +57,50 @@ for file in files_city:
 # %%
 city_metaft_df = create_dataframe(city_metaft, columns=city_metaft[0].columns)
 # %%
-all_metaft_df = pd.concat([dpl_metaft_df,prsmote_metaft_df,city_metaft_df])
+all_metaft_df = pd.concat([dpl_metaft_df,prsmote_metaft_df,city_metaft_df]).reset_index(drop=True)
+
+# %% add technique details for meta features
+for idx in all_metaft_df.index:
+    technique = all_metaft_df.ds_complete[idx].split('_')[1]
+    #print(metaft_df.ds_complete[idx])
+    if technique in (deepl + city):
+        all_metaft_df.at[idx, 'QI'] = ''.join(filter(str.isdigit, all_metaft_df.ds_complete[idx].split('_')[2]))
+        all_metaft_df.at[idx, 'epochs'] = ''.join(filter(str.isdigit, all_metaft_df.ds_complete[idx].split('_')[3]))
+        all_metaft_df.at[idx, 'batch'] = ''.join(filter(str.isdigit, all_metaft_df.ds_complete[idx].split('_')[4].split('.')[0]))
+        all_metaft_df.at[idx, 'technique'] = technique
+        if technique in city:
+            all_metaft_df.at[idx, 'epsilon'] = ''.join(filter(str.isdigit, all_metaft_df.ds_complete[idx].split('_')[5].split('.')[0]))
+            all_metaft_df.at[idx, 'technique'] = technique.upper()
+
+    if 'privateSMOTE' in all_metaft_df.ds_complete[idx]:
+        all_metaft_df.at[idx, 'QI'] = ''.join(filter(str.isdigit, all_metaft_df.ds_complete[idx].split('_')[2]))
+        all_metaft_df.at[idx, 'knn'] = ''.join(filter(str.isdigit, all_metaft_df.ds_complete[idx].split('_')[3]))
+        all_metaft_df.at[idx, 'per'] = ''.join(filter(str.isdigit, all_metaft_df.ds_complete[idx].split('_')[4].split('.')[0]))
+        all_metaft_df.at[idx, 'technique'] = r'$\epsilon$-PrivateSMOTE'
+# %% change names
+all_metaft_df["technique"]=all_metaft_df["technique"].str.replace('CopulaGAN', 'Copula GAN')
+
 # %% get only the best optimisation type and store linkability and roc auc results
 performance_results = pd.read_csv(f'{os.path.dirname(os.getcwd())}/output_analysis/results_test.csv')
 linkability_results = pd.read_csv(f'{os.path.dirname(os.getcwd())}/output_analysis/anonymeterk3.csv')
 
-# %% not efficient: read all data in each folder and merge to accuracy and linkability
-metafeatures = performance_results.copy()
-for idx in performance_results.index:
-    if performance_results.opt_type[idx] == 'Halving':
-        linkability_file = linkability_results.loc[(linkability_results.ds_complete == performance_results.ds_complete[idx])].reset_index(drop=True)
-        #meta_file = all_metaft.loc[(all_metaft.ds_complete == performance_results.ds_complete[idx])].reset_index(drop=True)
-        metafeatures['linkability_score'] = linkability_file.value.iloc[0]
-
-# %%
-metafeatures = pd.merge(metafeatures, all_metaft_df, how='left', on='ds_complete')
-
-# %%
-for idx in metafeatures.index:
-    technique = metafeatures.ds_complete[idx].split('_')[1]
-    metafeatures.at[idx, 'technique'] = technique
-    #print(metaft_df.ds_complete[idx])
-    if technique in (deepl + city):
-        metafeatures.at[idx, 'QI'] = ''.join(filter(str.isdigit, metafeatures.ds_complete[idx].split('_')[2]))
-        metafeatures.at[idx, 'epochs'] = ''.join(filter(str.isdigit, metafeatures.ds_complete[idx].split('_')[3]))
-        metafeatures.at[idx, 'batch'] = ''.join(filter(str.isdigit, metafeatures.ds_complete[idx].split('_')[4].split('.')[0]))
-        
-        if technique in city:
-            metafeatures.at[idx, 'epsilon'] = ''.join(filter(str.isdigit, metafeatures.ds_complete[idx].split('_')[5].split('.')[0]))
-
-    if 'privateSMOTE' in metafeatures.ds_complete[idx]:
-        metafeatures.at[idx, 'QI'] = ''.join(filter(str.isdigit, metafeatures.ds_complete[idx].split('_')[2]))
-        metafeatures.at[idx, 'knn'] = ''.join(filter(str.isdigit, metafeatures.ds_complete[idx].split('_')[3]))
-        metafeatures.at[idx, 'per'] = ''.join(filter(str.isdigit, metafeatures.ds_complete[idx].split('_')[4].split('.')[0]))
+# %% merge predcitive performance and linakbility
+performance_results = pd.merge(performance_results, linkability_results, how='left', left_on=['ds_complete', 'ds', 'technique'], right_on=['ds_complete', 'dsn', 'technique'])
+performance_results['value'].isna().sum()
+rows_to_remove = performance_results[performance_results['value'].isna()].index
+performance_results = performance_results.drop(rows_to_remove)
+# %% merge meta features with predictive performance and linkability
+all_metaft_df_ = performance_results.merge(all_metaft_df,how='left',on=['ds_complete', 'technique'])
 
 # %% change columns positions
-end_cols = ['linkability_score', 'test_roc_auc'] 
-other_cols = [col for col in metafeatures.columns if col not in end_cols]
-metaft_df = metafeatures[other_cols + end_cols]
+end_cols = ['ds','ds_complete','opt_type','technique','value', 'test_roc_auc'] 
+other_cols = [col for col in all_metaft_df_.columns if col not in end_cols]
+metaft_df = all_metaft_df_[other_cols + end_cols]
+
 # %%
-metaft_df.to_csv('../output_analysis/metaftk3_halving.csv', index=False)
+metaft_df = metaft_df.drop(columns=['params', 'model', 'test_roc_auc_oracle', 'roc_auc_perdif', 'ci', 'dsn'])
+# %%
+metaft_df.to_csv('../output_analysis/metaftk3.csv', index=False)
 # %%
 
 # allmfe = MFE(groups="all", summary="all")

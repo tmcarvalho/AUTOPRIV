@@ -3,16 +3,19 @@ import os
 import pandas as pd
 import numpy as np
 from sklearn.calibration import LabelEncoder
-from sklearn.linear_model import Ridge
+from sklearn.linear_model import Ridge, LinearRegression
+from sklearn.preprocessing import StandardScaler
 import itertools
 from pymfe.mfe import MFE
 
 # Function to prepare data
-def prepare_data():
+def prepare_data(opt_type):
     # Read data
-    training_data = pd.read_csv(f'{os.getcwd()}/output_analysis/metaftk3_hyperband.csv')
+    training_data = pd.read_csv(f'{os.getcwd()}/output_analysis/metaftk3.csv')
     testing_data = pd.read_csv(f'{os.getcwd()}/data/original/3.csv')
 
+    training_data = training_data.loc[training_data['opt_type']==opt_type].reset_index(drop=True)
+    print(training_data.shape)
     return training_data, testing_data
 
 # Function to encode categorical data
@@ -65,8 +68,9 @@ def main():
     nan_to_keep = ['QI', 'epochs', 'batch', 'knn', 'per', 'epsilon']
     label_encoder = LabelEncoder()
 
+    opt_type='Hyperband'
     # Prepare data
-    training_data, testing_data = prepare_data()
+    training_data, testing_data = prepare_data(opt_type)
     # Replace NaN in privacy parameters
     training_data[nan_to_keep] = training_data[nan_to_keep].fillna(0)
     encode(training_data, label_encoder)
@@ -74,13 +78,12 @@ def main():
     # Remove NaN columns
     columns_to_drop = training_data.columns[training_data.isnull().any()]
     training_data = training_data.drop(columns=columns_to_drop)
-    del training_data['ds_complete']
-    # Two possible ways: predict considering the QIs, or general solution (without QIS), we chose the second approach
-    del training_data['QI']
 
-    # Define x_train, y_train_accuracy, y_train_linkability
-    train_metafeatures, roc_auc = training_data.iloc[:,:-2].values, training_data.iloc[:,-1].values
-    linkability = training_data.iloc[:,-2].values
+    # remove unwanted columns
+    training_data = training_data.drop(columns=['ds_complete','ds','opt_type','QI'])
+    # Two possible ways: predict considering the QIs, or general solution (without QIS), we chose the second approach
+    # del training_data['QI']
+    print(training_data.shape)
 
     # Generate pipeline parameters for testing
     city_params, deep_learning_params, privateSMOTE_params = create_testing_pipelines()
@@ -102,29 +105,44 @@ def main():
     # del unseen_data['QI']
     encode(unseen_data, label_encoder)
 
+    # change columns position
+    end_cols = ['epochs', 'batch', 'knn', 'per', 'epsilon', 'technique'] 
+    other_cols = [col for col in unseen_data.columns if col not in end_cols]
+    unseen_data = unseen_data[other_cols + end_cols]
+
+    # Define x_train, y_train_accuracy, y_train_linkability
+    train_metafeatures, roc_auc = training_data.iloc[:,:-2].values, training_data.iloc[:,-1].values
+    linkability = training_data.iloc[:,-2].values
+
+    scaler = StandardScaler()
+    train_metafeatures = scaler.fit_transform(train_metafeatures)
+    unseen_data_scaled = scaler.transform(unseen_data)
+
     # Train linear regression model for predictive performance
-    lr_performance = Ridge(random_state=42)
+    lr_performance = LinearRegression()
     lr_performance.fit(train_metafeatures, roc_auc)
     print("Performance traning score: ", lr_performance.score(train_metafeatures, roc_auc))
-    predictions_performance = lr_performance.predict(unseen_data.values)
-    
+    predictions_performance = lr_performance.predict(unseen_data_scaled)
+
     # Train linear regression model for linkability
-    lr_linkability = Ridge(random_state=42)
+    lr_linkability = LinearRegression()
     lr_linkability.fit(train_metafeatures, linkability)
     print("Linkability traning score: ", lr_linkability.score(train_metafeatures, linkability))
-    predictions_linkability = lr_linkability.predict(unseen_data.values)
+    predictions_linkability = lr_linkability.predict(unseen_data_scaled)
 
     # Create DataFrame with predictions
+    predict_columns = ['epochs','batch','knn','per','epsilon','technique']
     pred_performance = pd.DataFrame(predictions_performance, columns=['Predictions Performance'])
     pred_linkability = pd.DataFrame(predictions_linkability, columns=['Predictions Linkability'])
-    output = pd.concat([unseen_data.iloc[:,92:], pred_performance, pred_linkability], axis=1)
+    output = pd.concat([unseen_data.loc[:,predict_columns], pred_performance, pred_linkability], axis=1)
+    print(output.columns)
     output['technique'] = label_encoder.inverse_transform(output['technique'])
     print(output.sort_values(by=['Predictions Performance'], ascending=False))
 
     output['rank'] = calculate_rank(pred_performance['Predictions Performance'].values, pred_linkability['Predictions Linkability'].values)
     print(output.sort_values(by=['rank'], ascending=False))
     output = output.sort_values(by=['rank'], ascending=False)
-    output.to_csv(f'{os.getcwd()}/output_analysis/predictions.csv', index=False)
+    output.to_csv(f'{os.getcwd()}/output_analysis/predictions_{opt_type}.csv', index=False)
 
 if __name__ == "__main__":
     main()

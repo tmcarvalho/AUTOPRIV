@@ -8,18 +8,24 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 
 # %%
-results_cv = pd.read_csv(f'{os.getcwd()}/output_analysis/resultsCV.csv')
-results_test = pd.read_csv(f'{os.getcwd()}/output_analysis/results_test.csv')
-priv_results = pd.read_csv(f'{os.getcwd()}/output_analysis/anonymeterk3.csv')
+results_cv = pd.read_csv(f'{os.path.dirname(os.getcwd())}/output_analysis/resultsCV.csv')
+results_test = pd.read_csv(f'{os.path.dirname(os.getcwd())}/output_analysis/results_test.csv')
+priv_results = pd.read_csv(f'{os.path.dirname(os.getcwd())}/output_analysis/anonymeterk3.csv')
 # %%
 results_cv["technique"]=results_cv["technique"].str.replace('PATEGAN', 'PATE-GAN')
 results_test["technique"]=results_test["technique"].str.replace('PATEGAN', 'PATE-GAN')
 priv_results["technique"]=priv_results["technique"].str.replace('PATEGAN', 'PATE-GAN')
 
-results_cv["opt_type"]=results_cv["opt_type"].str.replace('RandomSearch', 'Random Search')
-results_test["opt_type"]=results_test["opt_type"].str.replace('RandomSearch', 'Random Search')
-results_cv["opt_type"]=results_cv["opt_type"].str.replace('GridSearch', 'Grid Search')
-results_test["opt_type"]=results_test["opt_type"].str.replace('GridSearch', 'Grid Search')
+results_cv["opt_type"]=results_cv["opt_type"].str.replace('RandomSearch', 'RS')
+results_test["opt_type"]=results_test["opt_type"].str.replace('RandomSearch', 'RS')
+results_cv["opt_type"]=results_cv["opt_type"].str.replace('GridSearch', 'GS')
+results_test["opt_type"]=results_test["opt_type"].str.replace('GridSearch', 'GS')
+results_cv["opt_type"]=results_cv["opt_type"].str.replace('Hyperband', 'HB')
+results_test["opt_type"]=results_test["opt_type"].str.replace('Hyperband', 'HB')
+results_cv["opt_type"]=results_cv["opt_type"].str.replace('Bayes', 'BO')
+results_test["opt_type"]=results_test["opt_type"].str.replace('Bayes', 'BO')
+results_cv["opt_type"]=results_cv["opt_type"].str.replace('Halving', 'AUTOPRIV')
+results_test["opt_type"]=results_test["opt_type"].str.replace('Halving', 'AUTOPRIV')
 # %% remove datasets that failed to produce synthcity variants due to a low number of singleouts
 # remove_ds = ['ds8', 'ds32', 'ds24', 'ds2', 'ds59']
 # remove_ds = ['ds2', 'ds59', 'ds56', 'ds55', 'ds51', 'ds50', 'ds38', 'ds37', 'ds33']
@@ -35,7 +41,7 @@ PROPS = {
 
 color_techniques = ['#26C6DA', '#AB47BC', '#FFA000', '#FFEB3B', '#9CCC65', '#E91E63']
 order_technique = ['Copula GAN', 'TVAE', 'CTGAN', 'DPGAN', 'PATE-GAN', r'$\epsilon$-PrivateSMOTE']
-order_optype = ['Grid Search', 'Random Search', 'Bayes', 'Halving', 'Hyperband']
+order_optype = ['GS', 'RS', 'BO', 'HB', 'AUTOPRIV']
 # %% ROC AUC in Cross Validation
 sns.set_style("darkgrid")
 plt.figure(figsize=(18,10))
@@ -128,14 +134,14 @@ plt.figure(figsize=(12,7))
 ax = sns.boxplot(data=results_test_best, x='opt_type', y='time',
                  order=order_optype, **PROPS)
 sns.set(font_scale=2.1)
-plt.xticks(rotation=45)
+# plt.xticks(rotation=45)
 plt.yscale('symlog')
 plt.ylim(-0.02,20)
 plt.xlabel("")
 plt.ylabel("Time (min)")
 plt.show()
 # figure = ax.get_figure()
-# figure.savefig(f'{os.getcwd()}/output_analysis/plots/performancetest_optypek3_best_time.pdf', bbox_inches='tight')
+# figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/performancetest_optypek3_best_time.pdf', bbox_inches='tight')
 
 # %% fit time (from sklearn) in CV for all
 sns.set_style("darkgrid")
@@ -158,7 +164,7 @@ ax = sns.boxplot(data=results_cv, x='opt_type', y='time',
 sns.set(font_scale=2)
 plt.yscale('symlog')
 plt.ylim(-0.2,50)
-plt.xticks(rotation=45)
+# plt.xticks(rotation=45)
 plt.xlabel("")
 plt.ylabel("Time (min)")
 plt.show()

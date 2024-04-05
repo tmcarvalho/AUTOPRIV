@@ -11,8 +11,11 @@ import matplotlib.pyplot as plt
 results_test = pd.read_csv(f'{os.path.dirname(os.getcwd())}/output_analysis/results_test.csv')
 # %%
 results_test.loc[results_test['technique']=='PATEGAN', 'technique'] = 'PATE-GAN'
-results_test["opt_type"]=results_test["opt_type"].str.replace('RandomSearch', 'Random Search')
-results_test["opt_type"]=results_test["opt_type"].str.replace('GridSearch', 'Grid Search')
+results_test["opt_type"]=results_test["opt_type"].str.replace('RandomSearch', 'RS')
+results_test["opt_type"]=results_test["opt_type"].str.replace('GridSearch', 'GS')
+results_test["opt_type"]=results_test["opt_type"].str.replace('Bayes', 'BO')
+results_test["opt_type"]=results_test["opt_type"].str.replace('Halving', 'AUTOPRIV')
+results_test["opt_type"]=results_test["opt_type"].str.replace('Hyperband', 'HB')
 
 # %%
 
@@ -67,7 +70,7 @@ def sorter(column):
 
 def sorter_optype(column):
     reorder = [
-        'Grid Search', 'Random Search', 'Bayes', 'Halving', 'Hyperband'
+        'GS', 'RS', 'BO', 'HB', 'AUTOPRIV'
     ]
     cat = pd.Categorical(column, categories=reorder, ordered=True)
     return pd.Series(cat)
@@ -108,29 +111,29 @@ def visualize_data(best_optype_performance, metric_column, type_, plot_name):
     ax.set_ylabel('Proportion of probability')
     sns.move_legend(ax, bbox_to_anchor=(0.5,1.23), loc='upper center', borderaxespad=0., ncol=3, frameon=False, title="")         
     sns.set(font_scale=1.35)
-    plt.xticks(rotation=45)
+    plt.xticks(rotation=30)
     figure = ax.get_figure()
     figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/{plot_name}.pdf', bbox_inches='tight')
 
 # %% # Is there any solution that is always better?
 # Grid Search
-gridsearch = filter_data(results_test, 'Grid Search')
+gridsearch = filter_data(results_test, 'GS')
 best_performance = calculate_performance_difference(gridsearch)
 visualize_data(best_performance,'test_roc_auc_perdif_oracle', 'technique', 'bayes_gridsearch')
 # %% Halving
-halving = filter_data(results_test, 'Halving')
+halving = filter_data(results_test, 'AUTOPRIV')
 best_performance = calculate_performance_difference(halving)
 visualize_data(best_performance,'test_roc_auc_perdif_oracle', 'technique', 'bayes_halving')
 # %% Hyperband
-hyperband = filter_data(results_test, 'Hyperband')
+hyperband = filter_data(results_test, 'HB')
 best_performance = calculate_performance_difference(hyperband)
 visualize_data(best_performance,'test_roc_auc_perdif_oracle', 'technique','bayes_hyperband')
 # %%
 def calculate_performance_difference_optype(optsearch):
     """Calculate performance difference compared to the best overall performance."""
     best_optype_performance = optsearch.loc[optsearch.groupby(['ds', 'opt_type'])['test_roc_auc_oracle'].idxmax()].reset_index(drop=True)
-    gridsearch = filter_data(optsearch, 'Grid Search')
-    oracle_performance = gridsearch.loc[gridsearch.groupby(['ds'])["test_roc_auc_oracle"].idxmax()].reset_index(drop=True)
+    # gridsearch = filter_data(optsearch, 'Halving')
+    oracle_performance = best_optype_performance.loc[best_optype_performance.groupby(['ds'])["test_roc_auc_oracle"].idxmax()].reset_index(drop=True)
     # print(oracle_performance)
     # print(best_optype_performance)
     best_optype_performance['test_roc_auc_perdif_oracle'] = None
@@ -149,19 +152,19 @@ def visualize_data(best_optype_performance, metric_column, type_, plot_name):
     sns.set_style("darkgrid")
     fig, ax= plt.subplots(figsize=(6.8, 2.8))
     sns.histplot(data=solutions_org_candidates, stat='probability', multiple='fill', x='Solution', hue='Result', edgecolor='none',
-                palette = palette_candidates, shrink=0.85, hue_order=['Lose', 'Draw', 'Win'])
+                palette = palette_candidates, shrink=0.9, hue_order=['Lose', 'Draw',])
     ax.axhline(0.5, linewidth=0.5, color='lightgrey')
     ax.margins(x=0.2)
     ax.set_xlabel("")
     ax.set_ylabel('Proportion of probability')
     sns.move_legend(ax, bbox_to_anchor=(0.5,1.23), loc='upper center', borderaxespad=0., ncol=3, frameon=False, title="")         
     sns.set(font_scale=1.2)
-    plt.xticks(rotation=45)
+    # plt.xticks(rotation=45)
     figure = ax.get_figure()
     figure.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/{plot_name}.pdf', bbox_inches='tight')
 
 # %%
 best_performance = calculate_performance_difference_optype(results_test)
-best_performance = best_performance.loc[best_performance.opt_type!='Grid Search']
+# best_performance = best_performance.loc[best_performance.opt_type!='Halving']
 visualize_data(best_performance,'test_roc_auc_perdif_oracle', 'opt_type', 'bayes_optype')
 # %%

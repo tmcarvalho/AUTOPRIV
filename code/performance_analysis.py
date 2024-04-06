@@ -24,8 +24,8 @@ results_cv["opt_type"]=results_cv["opt_type"].str.replace('Hyperband', 'HB')
 results_test["opt_type"]=results_test["opt_type"].str.replace('Hyperband', 'HB')
 results_cv["opt_type"]=results_cv["opt_type"].str.replace('Bayes', 'BO')
 results_test["opt_type"]=results_test["opt_type"].str.replace('Bayes', 'BO')
-results_cv["opt_type"]=results_cv["opt_type"].str.replace('Halving', 'AUTOPRIV')
-results_test["opt_type"]=results_test["opt_type"].str.replace('Halving', 'AUTOPRIV')
+results_cv["opt_type"]=results_cv["opt_type"].str.replace('Halving', 'SH')
+results_test["opt_type"]=results_test["opt_type"].str.replace('Halving', 'SH')
 # %% remove datasets that failed to produce synthcity variants due to a low number of singleouts
 # remove_ds = ['ds8', 'ds32', 'ds24', 'ds2', 'ds59']
 # remove_ds = ['ds2', 'ds59', 'ds56', 'ds55', 'ds51', 'ds50', 'ds38', 'ds37', 'ds33']
@@ -41,7 +41,7 @@ PROPS = {
 
 color_techniques = ['#26C6DA', '#AB47BC', '#FFA000', '#FFEB3B', '#9CCC65', '#E91E63']
 order_technique = ['Copula GAN', 'TVAE', 'CTGAN', 'DPGAN', 'PATE-GAN', r'$\epsilon$-PrivateSMOTE']
-order_optype = ['GS', 'RS', 'BO', 'HB', 'AUTOPRIV']
+order_optype = ['GS', 'RS', 'BO', 'SH', 'HB']
 # %% ROC AUC in Cross Validation
 sns.set_style("darkgrid")
 plt.figure(figsize=(18,10))

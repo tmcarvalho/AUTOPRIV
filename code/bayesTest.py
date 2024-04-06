@@ -14,7 +14,7 @@ results_test.loc[results_test['technique']=='PATEGAN', 'technique'] = 'PATE-GAN'
 results_test["opt_type"]=results_test["opt_type"].str.replace('RandomSearch', 'RS')
 results_test["opt_type"]=results_test["opt_type"].str.replace('GridSearch', 'GS')
 results_test["opt_type"]=results_test["opt_type"].str.replace('Bayes', 'BO')
-results_test["opt_type"]=results_test["opt_type"].str.replace('Halving', 'AUTOPRIV')
+results_test["opt_type"]=results_test["opt_type"].str.replace('Halving', 'SH')
 results_test["opt_type"]=results_test["opt_type"].str.replace('Hyperband', 'HB')
 
 # %%
@@ -121,7 +121,7 @@ gridsearch = filter_data(results_test, 'GS')
 best_performance = calculate_performance_difference(gridsearch)
 visualize_data(best_performance,'test_roc_auc_perdif_oracle', 'technique', 'bayes_gridsearch')
 # %% Halving
-halving = filter_data(results_test, 'AUTOPRIV')
+halving = filter_data(results_test, 'SH')
 best_performance = calculate_performance_difference(halving)
 visualize_data(best_performance,'test_roc_auc_perdif_oracle', 'technique', 'bayes_halving')
 # %% Hyperband

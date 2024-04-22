@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 from sklearn.calibration import LabelEncoder
-from sklearn.linear_model import Ridge, LinearRegression
+from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
 import itertools
 from pymfe.mfe import MFE
@@ -68,7 +68,7 @@ def main():
     nan_to_keep = ['QI', 'epochs', 'batch', 'knn', 'per', 'epsilon']
     label_encoder = LabelEncoder()
 
-    opt_type='Hyperband'
+    opt_type='Halving'
     # Prepare data
     training_data, testing_data = prepare_data(opt_type)
     # Replace NaN in privacy parameters

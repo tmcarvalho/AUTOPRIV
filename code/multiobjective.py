@@ -6,7 +6,7 @@ import seaborn as sns
 
 # %%
 # Read data
-predictions = pd.read_csv(f'{os.path.dirname(os.getcwd())}/output_analysis/predictions_Hyperband.csv')
+predictions = pd.read_csv(f'{os.path.dirname(os.getcwd())}/output_analysis/predictions_Halving.csv')
 
 # %% ########################################
 #           PLOT SIMPLE PARETO FRONT        #

@@ -70,7 +70,7 @@ def sorter(column):
 
 def sorter_optype(column):
     reorder = [
-        'GS', 'RS', 'BO', 'HB', 'AUTOPRIV'
+        'GS', 'RS', 'BO', 'SH', 'HB'
     ]
     cat = pd.Categorical(column, categories=reorder, ordered=True)
     return pd.Series(cat)

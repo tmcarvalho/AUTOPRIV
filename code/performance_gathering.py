@@ -140,5 +140,3 @@ for idx in results_cv.index:
 # %%
 # results_cv.to_csv('../output_analysis/resultsCV.csv', index=False)
 # results_test.to_csv('../output_analysis/results_test.csv', index=False)
-
-

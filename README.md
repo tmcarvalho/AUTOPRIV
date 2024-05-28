@@ -4,7 +4,7 @@
 
 The main goal of **AUTOPRIV** is to antecipate predictive performance and linkability risk to reduce the number of extensive experimentas to achieve a good balance between these two conflicting metrics. Our approach is specifically tailored for applications in machine learning tasks as it assesses utlity in terms of predictive performance. 
 
-With the output of **AUTOPRIV**, we can directly apply the recommended privacy configuration to a new data set. Thus, we save a lot of time. This capability significantly accelerates the process, eliminating the typically lengthy and resource-intensive steps usually required in the de-identification process.
+With the output of **AUTOPRIV**, we can directly apply the recommended privacy configuration to a new data set. This capability significantly accelerates the process, eliminating the typically lengthy and resource-intensive steps usually required in the de-identification process.
 
 
 ## Instructions

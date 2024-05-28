@@ -12,7 +12,7 @@ from pymfe.mfe import MFE
 def prepare_data(opt_type):
     # Read data
     training_data = pd.read_csv(f'{os.getcwd()}/output_analysis/metaftk3.csv')
-    testing_data = pd.read_csv(f'{os.getcwd()}/data/original/3.csv')
+    testing_data = pd.read_csv(f'{os.getcwd()}/newdataset.csv')
 
     training_data = training_data.loc[training_data['opt_type']==opt_type].reset_index(drop=True)
     print(training_data.shape)
@@ -83,8 +83,7 @@ def main():
     training_data = training_data.drop(columns=['ds_complete','ds','opt_type','QI'])
     # Two possible ways: predict considering the QIs, or general solution (without QIS), we chose the second approach
     # del training_data['QI']
-    print(training_data.shape)
-
+    
     # Generate pipeline parameters for testing
     city_params, deep_learning_params, privateSMOTE_params = create_testing_pipelines()
 
@@ -121,13 +120,11 @@ def main():
     # Train linear regression model for predictive performance
     lr_performance = LinearRegression()
     lr_performance.fit(train_metafeatures, roc_auc)
-    print("Performance traning score: ", lr_performance.score(train_metafeatures, roc_auc))
     predictions_performance = lr_performance.predict(unseen_data_scaled)
 
     # Train linear regression model for linkability
     lr_linkability = LinearRegression()
     lr_linkability.fit(train_metafeatures, linkability)
-    print("Linkability traning score: ", lr_linkability.score(train_metafeatures, linkability))
     predictions_linkability = lr_linkability.predict(unseen_data_scaled)
 
     # Create DataFrame with predictions
@@ -135,9 +132,9 @@ def main():
     pred_performance = pd.DataFrame(predictions_performance, columns=['Predictions Performance'])
     pred_linkability = pd.DataFrame(predictions_linkability, columns=['Predictions Linkability'])
     output = pd.concat([unseen_data.loc[:,predict_columns], pred_performance, pred_linkability], axis=1)
-    print(output.columns)
+
     output['technique'] = label_encoder.inverse_transform(output['technique'])
-    print(output.sort_values(by=['Predictions Performance'], ascending=False))
+    # print(output.sort_values(by=['Predictions Performance'], ascending=False))
 
     output['rank'] = calculate_rank(pred_performance['Predictions Performance'].values, pred_linkability['Predictions Linkability'].values)
     print(output.sort_values(by=['rank'], ascending=False))
@@ -147,5 +144,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-
-# SVR, kneighbour, normal LR

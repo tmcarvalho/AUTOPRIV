@@ -34,7 +34,7 @@ plt.ylabel('Linkability Predictions')
 # plt.title('Pareto Front Analysis')
 plt.legend()
 plt.grid(True)
-plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/pareto.pdf', bbox_inches='tight')
+#plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/pareto.pdf', bbox_inches='tight')
 
 #plt.xticks(np.arange(min(predictions['Predictions Performance']), max(predictions['Predictions Performance'])+0.001, 0.001))
 #plt.gca().xaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))  # Adjust decimal places as needed
@@ -50,5 +50,3 @@ plt.ylabel('Linkability Predictions')
 plt.legend()
 plt.grid(True)
 # plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/pareto_rank_hyperband.pdf', bbox_inches='tight')
-
-# %%

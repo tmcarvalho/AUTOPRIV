@@ -3,17 +3,30 @@ import os
 import pandas as pd
 import numpy as np
 from sklearn.calibration import LabelEncoder
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, BayesianRidge,RidgeCV
 from sklearn.preprocessing import StandardScaler
 import itertools
+import re
+import shap
 from pymfe.mfe import MFE
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 # Function to prepare data
 def prepare_data(opt_type):
     # Read data
     training_data = pd.read_csv(f'{os.getcwd()}/output_analysis/metaftk3.csv')
-    testing_data = pd.read_csv(f'{os.getcwd()}/newdataset.csv')
+    testing_data = pd.read_csv(f'{os.getcwd()}/43.csv')
+    
+    # get 80% of data
+    indexes = np.load('indexes.npy', allow_pickle=True).item()
+    indexes = pd.DataFrame.from_dict(indexes)
 
+    index = indexes.loc[indexes['ds']==str(43), 'indexes'].values[0]
+    data_idx = list(set(list(testing_data.index)) - set(index))
+    testing_data = testing_data.iloc[data_idx, :]
+    
     training_data = training_data.loc[training_data['opt_type']==opt_type].reset_index(drop=True)
     print(training_data.shape)
     return training_data, testing_data
@@ -57,8 +70,8 @@ def extract_metafeatures(unseen_dataset):
 
 def calculate_rank(predictions_performance, predictions_linkability):
     # Calculate ranks for performance and linkability
-    rank_performance = pd.Series(predictions_performance).rank(pct=True)
-    rank_linkability = pd.Series(predictions_linkability).rank(pct=True, ascending=False)  # Set ascending=False for inverse ranking
+    rank_performance = pd.Series(predictions_performance).rank(pct=False, ascending=False) # Set ascending=False for inverse ranking
+    rank_linkability = pd.Series(predictions_linkability).rank(pct=False, ascending=True)  # lower values, lower rank -> rank 1 is the best
 
     # Calculate mean rank of performance and linkability
     mean_rank = (rank_performance + rank_linkability) / 2
@@ -127,6 +140,18 @@ def main():
     lr_linkability.fit(train_metafeatures, linkability)
     predictions_linkability = lr_linkability.predict(unseen_data_scaled)
 
+    #  SHAP Explanations
+    print("Calculating SHAP values for performance model...")
+    explainer_perf = shap.LinearExplainer(lr_performance, train_metafeatures, feature_perturbation="interventional")
+    shap_values_perf = explainer_perf.shap_values(unseen_data_scaled)
+    print("Calculating SHAP values for linkability model...")
+    explainer_link = shap.LinearExplainer(lr_linkability, train_metafeatures, feature_perturbation="interventional")
+    shap_values_link = explainer_link.shap_values(unseen_data_scaled)
+
+    # SHAP Visualization
+    shap.summary_plot(shap_values_perf, training_data.columns, show=True)
+    shap.summary_plot(shap_values_link, training_data.columns, show=True)
+
     # Create DataFrame with predictions
     predict_columns = ['epochs','batch','knn','per','epsilon','technique']
     pred_performance = pd.DataFrame(predictions_performance, columns=['Predictions Performance'])
@@ -137,10 +162,11 @@ def main():
     # print(output.sort_values(by=['Predictions Performance'], ascending=False))
 
     output['rank'] = calculate_rank(pred_performance['Predictions Performance'].values, pred_linkability['Predictions Linkability'].values)
-    print(output.sort_values(by=['rank'], ascending=False))
-    output = output.sort_values(by=['rank'], ascending=False)
+    print(output.sort_values(by=['rank'], ascending=True))
+    output = output.sort_values(by=['rank'], ascending=True)
     output.to_csv(f'{os.getcwd()}/output_analysis/predictions_{opt_type}.csv', index=False)
 
 if __name__ == "__main__":
     main()
 
+# exec(open('code/stackml.py').read())

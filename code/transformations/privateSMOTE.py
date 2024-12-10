@@ -5,17 +5,11 @@ This script will apply SMOTE technique in the single out cases.
 # Import necessary libraries
 from os import sep
 import re
+import ast
 import pandas as pd
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-import argparse
-
-# Parse command-line arguments
-parser = argparse.ArgumentParser(description='Master Example')
-parser.add_argument('--input_file', type=str, default="none")
-parser.add_argument('--key_vars', type=str, default="none")
-args = parser.parse_args()
 
 def keep_numbers(data):
     """Fix data types according to the data"""
@@ -212,7 +206,7 @@ class PrivateSMOTE:
 
 
 # %% 
-def PrivateSMOTE_force_laplace_(input_file, keys):
+def PrivateSMOTE_force_laplace_(input_file, args):
     """Generate several interpolated data sets considering all classes.
 
     Args:
@@ -220,15 +214,14 @@ def PrivateSMOTE_force_laplace_(input_file, keys):
     """
     print(input_file)
 
-    output_interpolation_folder = 'output/oversampled/PrivateSMOTE'
+    output_interpolation_folder = 'data/newdataset/PrivateSMOTE'
     
     # get 80% of data to synthesise
     indexes = np.load('indexes.npy', allow_pickle=True).item()
     indexes = pd.DataFrame.from_dict(indexes)
 
     f = list(map(int, re.findall(r'\d+', input_file.split('_')[0])))
-    print(str(f[0]))
-    data = pd.read_csv(f'original/{str(f[0])}.csv')
+    data = pd.read_csv(f'data/original/{str(f[0])}.csv')
 
     index = indexes.loc[indexes['ds']==str(f[0]), 'indexes'].values[0]
     data_idx = list(set(list(data.index)) - set(index))
@@ -237,9 +230,14 @@ def PrivateSMOTE_force_laplace_(input_file, keys):
     # encode string with numbers to numeric and remove trailing zeros
     data = keep_numbers(data)
 
-    # print(data.shape)
-    keys_list = keys.split(',')
-    data = aux_singleouts(keys_list, data)
+    list_key_vars = pd.read_csv('list_key_vars.csv')
+    set_key_vars = ast.literal_eval(
+            list_key_vars.loc[list_key_vars['ds']==f[0], 'set_key_vars'].values[0])
+
+    keys_nr = list(map(int, re.findall(r'\d+', input_file.split('_')[2])))[0]
+    keys = set_key_vars[keys_nr]
+
+    data = aux_singleouts(keys, data)
 
     # encoded target
     tgt_obj = data[data.columns[-2]].dtypes == 'object'
@@ -266,5 +264,3 @@ def PrivateSMOTE_force_laplace_(input_file, keys):
     newDf = check_and_adjust_data_types(data, newDf)
     
     newDf.to_csv(f'{output_interpolation_folder}{sep}{input_file}.csv', index=False)
-
-PrivateSMOTE_force_laplace_(args.input_file, args.key_vars)

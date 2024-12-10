@@ -11,6 +11,7 @@ import gc
 import pika
 from deep_learning import synth
 from city import synth_city
+from privateSMOTE import PrivateSMOTE_force_laplace_
 
 #%%
 parser = argparse.ArgumentParser(description='Master Example')
@@ -44,8 +45,10 @@ def do_work(conn, ch, delivery_tag, body):
     msg = body.decode('utf-8')
     if args.type == 'deep_learning':
         work_sucess = synth(msg, args)
-    else:
+    elif args.type == 'synthcity':
         work_sucess = synth_city(msg, args)
+    else:
+        work_sucess = PrivateSMOTE_force_laplace_(msg, args)
     gc.collect()
     os.system('find . -name "__pycache__" -type d -exec rm -rf "{}" +')
     os.system('find . -name "*.pyc"| xargs rm -f "{}"')
@@ -90,3 +93,4 @@ connection.close()
 # python3 code/transformations/task_transf.py  --input_folder "data/original" --type "Synthcity"
 # python3 code/transformations/worker_transf.py --type "deep_learning" --id "0"
 # python3 code/transformations/worker_transf.py --type "synthcity" --id "0"
+# python3 code/transformations/worker_transf.py --type "privatesmote"

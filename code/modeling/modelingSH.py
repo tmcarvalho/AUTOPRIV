@@ -16,7 +16,7 @@ from sklearn.model_selection import HalvingGridSearchCV, RepeatedStratifiedKFold
 from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier
 
-warnings.filterwarnings(action='ignore', category=FutureWarning)
+warnings.filterwarnings(action='ignore', category=RuntimeWarning)
 
 # %% evaluate a model
 def evaluate_model_sh(x_train, x_test, y_train, y_test):

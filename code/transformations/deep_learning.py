@@ -27,8 +27,8 @@ def synth(msg, args):
     """
     cuda.select_device(int(args.id))
     print(msg)
-    output_interpolation_folder = 'data/deep_learning/'
-    if msg.split('_')[0] not in ['ds100', 'ds43']:
+    output_interpolation_folder = 'data/newdataset/deep_learning'
+    if msg.split('_')[0] not in ['ds100']: #'ds43'
         f = list(map(int, re.findall(r'\d+', msg.split('_')[0])))
         print(str(f[0]))
         data = pd.read_csv(f'data/original/{str(f[0])}.csv')
@@ -102,7 +102,7 @@ def synth(msg, args):
         gc.collect()
 
 # function optimized to run on gpu 
-@jit(target_backend='cuda')
+# @jit(target_backend='cuda')
 def modeling(model, data):
     # Fit the model to the data
     model.fit(data)

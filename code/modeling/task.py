@@ -43,12 +43,11 @@ dl_queue = channel.queue_declare(queue='dl')
 channel.queue_bind(exchange='dlx', routing_key='task_queue', queue=dl_queue.method.queue)
 
 file_list = [f for f in os.listdir(args.input_folder) if '.csv' in f]
-file_list_priv = os.listdir("output/modelingBO/PrivateSMOTE/test")
-missing_files = list(set(file_list)-set(file_list_priv))
-for file in missing_files:
+for file in file_list:
     f = list(map(int, re.findall(r'\d+', file.split('_')[0])))[0]
     # 2,59,56,55,51,50,38,37,33
-    if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87, 100,43]:
+    # if f not in [0,1,3,13,23,28,34,36,40,48,54,66,87, 100,43]:
+    if f in [43]:
         if len(file.split('csv')[0])<4:
             print(file)
             put_file_queue(channel, file.split('.csv')[0])

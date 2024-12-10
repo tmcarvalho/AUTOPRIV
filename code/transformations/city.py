@@ -29,7 +29,7 @@ def synth_city(msg, args):
     """
     cuda.select_device(int(args.id))
     print(msg)
-    output_interpolation_folder = 'data/synthcity/'
+    output_interpolation_folder = 'data/newdataset/synthcity'
 
     f = list(map(int, re.findall(r'\d+', msg.split('_')[0])))
     data = pd.read_csv(f'data/original/{str(f[0])}.csv')
@@ -67,34 +67,34 @@ def synth_city(msg, args):
     unprotected_data = data.loc[data['single_out'] == 1].reset_index(drop=True)
     del protected_data['single_out']
     del unprotected_data['single_out']
-    try: 
-        if technique == 'dpgan':
-            epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
-            bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
-            epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[5])))[0]
-            model = Plugins().get("dpgan", n_iter=epo, batch_size=bs, epsilon=epi)
+    #try: 
+    if technique == 'dpgan':
+        epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
+        bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
+        epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[5])))[0]
+        model = Plugins().get("dpgan", n_iter=epo, batch_size=bs, epsilon=epi)
 
-        elif technique == 'pategan':
-            epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
-            bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
-            epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[5])))[0]
-            model = Plugins().get("pategan", n_iter=epo, batch_size=bs, epsilon=epi)
+    elif technique == 'pategan':
+        epo = list(map(int, re.findall(r'\d+', msg.split('_')[3])))[0]
+        bs = list(map(int, re.findall(r'\d+', msg.split('_')[4])))[0]
+        epi = list(map(float, re.findall(r'\d+\.\d+', msg.split('_')[5])))[0]
+        model = Plugins().get("pategan", n_iter=epo, batch_size=bs, epsilon=epi)
 
 
-        new_data = modeling(model, unprotected_data)
-        new_data_ = pd.concat([new_data, protected_data])
+    new_data = modeling(model, unprotected_data)
+    new_data_ = pd.concat([new_data, protected_data])
 
-        # Save the synthetic data
-        new_data_.to_csv(
-            f'{output_interpolation_folder}{sep}{msg}.csv',
-            index=False)
-    except:
-        with open('output/failed_file_synth.txt', 'a') as failed_file:
-            #  Save the name of the failed file to a text file
-            failed_file.write(f'{msg} --- city\n')
+    # Save the synthetic data
+    new_data_.to_csv(
+        f'{output_interpolation_folder}{sep}{msg}.csv',
+        index=False)
+    # except:
+    #     with open('output/failed_file_synth.txt', 'a') as failed_file:
+    #         #  Save the name of the failed file to a text file
+    #         failed_file.write(f'{msg} --- city\n')
 
 # function optimized to run on gpu 
-@jit(target_backend='cuda')
+#@jit(target_backend='cuda')
 def modeling(model, data):
     # Fit the model to the data
     model.fit(data)

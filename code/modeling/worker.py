@@ -77,12 +77,12 @@ connection.close()
 
 # find . -name ".DS_Store" -delete
 # python3 code/modeling/task.py --input_folder "data/PPT_transformed/PPT_train"
-# python3 code/modeling/task.py --input_folder "data/PrivateSMOTE"
+# python3 code/modeling/task.py --input_folder "data/newdataset/PrivateSMOTE"
 # python3 code/modeling/task.py --input_folder "data/original"
 # python3 code/modeling/task.py --input_folder "data/synthcity"
 # python3 code/modeling/task.py --input_folder "data/deep_learning"
 # python3 code/modeling/worker.py --type "ppt" --opt "BO" --input_folder "data/PPT_transformed/PPT_train" --output_folder "output/modelingBO/PPT_ARX"
-# python3 code/modeling/worker.py --type "gans" --opt "BO" --input_folder "data/deep_learning" --output_folder "output/modelingBO/deep_learning"
-# python3 code/modeling/worker.py --type "PrivateSMOTE" --opt "BO" --input_folder "data/PrivateSMOTE" --output_folder "output/modelingBO/PrivateSMOTE"
-# python3 code/modeling/worker.py --type "synthcity" --opt "BO" --input_folder "data/synthcity" --output_folder "output/modelingBO/synthcity"
+# python3 code/modeling/worker.py --type "gans" --opt "SH" --input_folder "data/deep_learning" --output_folder "output/modelingBO/deep_learning"
+# python3 code/modeling/worker.py --type "PrivateSMOTE" --opt "SH" --input_folder "data/newdataset/PrivateSMOTE" --output_folder "output/newdataset/performance"
+# python3 code/modeling/worker.py --type "synthcity" --opt "SH" --input_folder "data/synthcity" --output_folder "output/modelingBO/synthcity"
 # python3 code/modeling/worker.py --type "original" --opt "HB" --input_folder "data/original" --output_folder "output/modelingHB/original"

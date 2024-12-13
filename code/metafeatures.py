@@ -69,10 +69,11 @@ for idx in all_metaft_df.index:
         all_metaft_df.at[idx, 'batch'] = ''.join(filter(str.isdigit, all_metaft_df.ds_complete[idx].split('_')[4].split('.')[0]))
         all_metaft_df.at[idx, 'technique'] = technique
         if technique in city:
-            all_metaft_df.at[idx, 'epsilon'] = ''.join(filter(str.isdigit, all_metaft_df.ds_complete[idx].split('_')[5].split('.')[0]))
+            all_metaft_df.at[idx, 'epsilon'] = ''.join(filter(str.isdigit, all_metaft_df.ds_complete[idx].split('_')[5].split('.csv')[0]))
             all_metaft_df.at[idx, 'technique'] = technique.upper()
 
     if 'privateSMOTE' in all_metaft_df.ds_complete[idx]:
+        all_metaft_df.at[idx, 'epsilon'] = ''.join(filter(lambda x: x.isdigit() or x == '.', all_metaft_df.ds_complete[idx].split('_')[1].split('.csv')[0]))
         all_metaft_df.at[idx, 'QI'] = ''.join(filter(str.isdigit, all_metaft_df.ds_complete[idx].split('_')[2]))
         all_metaft_df.at[idx, 'knn'] = ''.join(filter(str.isdigit, all_metaft_df.ds_complete[idx].split('_')[3]))
         all_metaft_df.at[idx, 'per'] = ''.join(filter(str.isdigit, all_metaft_df.ds_complete[idx].split('_')[4].split('.')[0]))
@@ -109,3 +110,11 @@ metaft_df.to_csv('../output_analysis/metaftk3.csv', index=False)
 # print(len(allft[0]))
 # allftdf = pd.DataFrame(allft[1:], columns=allft[0])
 # allftdf.to_csv('output/allmetaft.csv', index=False)
+# %%
+# for idx in range(len(metaft_df)):
+#     if 'pategan' in metaft_df.ds_complete[idx]:
+#         metaft_df.at[idx, 'epsilon'] = ''.join(filter(lambda x: x.isdigit() or x == '.', metaft_df.ds_complete[idx].split('_')[5].split('.csv')[0]))
+#         #print(''.join(filter(lambda x: x.isdigit() or x == '.', metaft_df.ds_complete[idx].split('_')[1].split('.csv')[0])))
+
+
+# %%

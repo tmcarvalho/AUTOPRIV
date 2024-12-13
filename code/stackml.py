@@ -5,6 +5,7 @@ import numpy as np
 from sklearn.calibration import LabelEncoder
 from sklearn.linear_model import LinearRegression, BayesianRidge,RidgeCV
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_absolute_error
 import itertools
 import re
 import shap
@@ -17,19 +18,23 @@ warnings.filterwarnings("ignore", category=UserWarning)
 def prepare_data(opt_type):
     # Read data
     training_data = pd.read_csv(f'{os.getcwd()}/output_analysis/metaftk3.csv')
-    testing_data = pd.read_csv(f'{os.getcwd()}/43.csv')
-    
+    unseen_data = pd.read_csv(f'{os.getcwd()}/43.csv')
+
     # get 80% of data
     indexes = np.load('indexes.npy', allow_pickle=True).item()
     indexes = pd.DataFrame.from_dict(indexes)
 
     index = indexes.loc[indexes['ds']==str(43), 'indexes'].values[0]
-    data_idx = list(set(list(testing_data.index)) - set(index))
-    testing_data = testing_data.iloc[data_idx, :]
+    data_idx = list(set(list(unseen_data.index)) - set(index))
+    unseen_data = unseen_data.iloc[data_idx, :]
     
     training_data = training_data.loc[training_data['opt_type']==opt_type].reset_index(drop=True)
-    print(training_data.shape)
-    return training_data, testing_data
+    y_test = training_data.loc[(training_data.ds == 'ds5') & (training_data.QI == 0), 'QI':].reset_index(drop=True)
+    x_train = training_data.loc[training_data.ds!='ds5'].reset_index(drop=True)
+
+    y_test = y_test[['epochs', 'batch', 'knn', 'per', 'epsilon', 'technique', 'value','test_roc_auc']]
+    
+    return x_train, unseen_data, y_test
 
 # Function to encode categorical data
 def encode(data, encoder):
@@ -45,8 +50,8 @@ def generate_pipeline_params(params_dict):
 def create_testing_pipelines():
     # Define parameters for different techniques
     city_params = {'technique': ['DPGAN', 'PATEGAN'], 'epochs':[100, 200], 'batch':[50, 100], 'epsilon':[0.1, 0.5, 1.0, 5.0]}
-    deep_learning_params = {'technique': ['CopulaGAN', 'CTGAN', 'TVAE'], 'epochs':[100, 200], 'batch':[50, 100]}
-    privateSMOTE_params = {'technique':['privateSMOTE'], 'knn':[1,3,5], 'per': [1,2,3], 'epsilon':[0.1, 0.5, 1.0, 5.0, 10.0]}
+    deep_learning_params = {'technique': ['Copula GAN', 'CTGAN', 'TVAE'], 'epochs':[100, 200], 'batch':[50, 100]}
+    privateSMOTE_params = {'technique':[r'$\epsilon$-PrivateSMOTE'], 'knn':[1,3,5], 'per': [1,2,3], 'epsilon':[0.1, 0.5, 1.0, 5.0, 10.0]}
     
     # Generate parameter combinations for each technique
     city = generate_pipeline_params(city_params)
@@ -83,7 +88,8 @@ def main():
 
     opt_type='Halving'
     # Prepare data
-    training_data, testing_data = prepare_data(opt_type)
+    training_data, unseen_data, y_test = prepare_data(opt_type)
+
     # Replace NaN in privacy parameters
     training_data[nan_to_keep] = training_data[nan_to_keep].fillna(0)
     encode(training_data, label_encoder)
@@ -101,7 +107,7 @@ def main():
     city_params, deep_learning_params, privateSMOTE_params = create_testing_pipelines()
 
     # Extract metafeatures from unseen data
-    ftdf = extract_metafeatures(testing_data)
+    ftdf = extract_metafeatures(unseen_data)
 
     # Generate unseen data
     unseen_data_deep = generate_unseen_data(ftdf, deep_learning_params)
@@ -109,44 +115,56 @@ def main():
     unseen_data_privatesmote = generate_unseen_data(ftdf, privateSMOTE_params)
 
     # Concatenate all unseen_data DataFrames
-    unseen_data = pd.concat([unseen_data_deep, unseen_data_city, unseen_data_privatesmote], ignore_index=True)
+    x_test = pd.concat([unseen_data_deep, unseen_data_city, unseen_data_privatesmote], ignore_index=True)
 
     # Replace NaN in privacy parameters with 0 in unseen data
-    unseen_data[list(set(nan_to_keep)-set(['QI']))] = unseen_data[list(set(nan_to_keep)-set(['QI']))].fillna(0)
-    unseen_data = unseen_data.drop(columns=columns_to_drop)
-    # del unseen_data['QI']
-    encode(unseen_data, label_encoder)
+    y_test[list(set(nan_to_keep)-set(['QI']))] = y_test[list(set(nan_to_keep)-set(['QI']))].fillna(0)
+    x_test[list(set(nan_to_keep)-set(['QI']))] = x_test[list(set(nan_to_keep)-set(['QI']))].fillna(0)
+    x_test = x_test.drop(columns=columns_to_drop)
+
+    # Create a multi-key for ordering
+    x_test['multi_key'] = x_test[['epochs', 'batch', 'knn', 'per', 'epsilon', 'technique']].apply(tuple, axis=1)
+    y_test['multi_key'] = y_test[['epochs', 'batch', 'knn', 'per', 'epsilon', 'technique']].apply(tuple, axis=1)
+    # Order by reference
+    y_test['multi_key'] = pd.Categorical(y_test['multi_key'], categories=x_test['multi_key'], ordered=True)
+    y_test = y_test.sort_values('multi_key').drop(columns=['multi_key']).reset_index(drop=True)
+    # y_test = x_test.merge(y_test, on=['epochs', 'batch', 'knn', 'per', 'epsilon', 'technique'])
+    del x_test['multi_key']
+
+    encode(x_test, label_encoder)
 
     # change columns position
     end_cols = ['epochs', 'batch', 'knn', 'per', 'epsilon', 'technique'] 
-    other_cols = [col for col in unseen_data.columns if col not in end_cols]
-    unseen_data = unseen_data[other_cols + end_cols]
+    other_cols = [col for col in x_test.columns if col not in end_cols]
+    x_test = x_test[other_cols + end_cols]
 
     # Define x_train, y_train_accuracy, y_train_linkability
-    train_metafeatures, roc_auc = training_data.iloc[:,:-2].values, training_data.iloc[:,-1].values
-    linkability = training_data.iloc[:,-2].values
+    x_train, y_train_roc_auc = training_data.iloc[:,:-2].values, training_data.iloc[:,-1].values
+    y_train_linkability = training_data.iloc[:,-2].values
 
     scaler = StandardScaler()
-    train_metafeatures = scaler.fit_transform(train_metafeatures)
-    unseen_data_scaled = scaler.transform(unseen_data)
+    x_train = scaler.fit_transform(x_train)
+    x_test_scaled = scaler.transform(x_test)
 
     # Train linear regression model for predictive performance
     lr_performance = LinearRegression()
-    lr_performance.fit(train_metafeatures, roc_auc)
-    predictions_performance = lr_performance.predict(unseen_data_scaled)
+    lr_performance.fit(x_train, y_train_roc_auc)
+    predictions_performance = lr_performance.predict(x_test_scaled)
+    print(mean_absolute_error(y_test['test_roc_auc'].values, predictions_performance))
 
     # Train linear regression model for linkability
     lr_linkability = LinearRegression()
-    lr_linkability.fit(train_metafeatures, linkability)
-    predictions_linkability = lr_linkability.predict(unseen_data_scaled)
+    lr_linkability.fit(x_train, y_train_linkability)
+    predictions_linkability = lr_linkability.predict(x_test_scaled)
+    print(mean_absolute_error(y_test['value'].values, predictions_linkability))
 
     #  SHAP Explanations
     print("Calculating SHAP values for performance model...")
-    explainer_perf = shap.LinearExplainer(lr_performance, train_metafeatures, feature_perturbation="interventional")
-    shap_values_perf = explainer_perf.shap_values(unseen_data_scaled)
+    explainer_perf = shap.LinearExplainer(lr_performance, x_train, feature_perturbation="interventional")
+    shap_values_perf = explainer_perf.shap_values(x_test_scaled)
     print("Calculating SHAP values for linkability model...")
-    explainer_link = shap.LinearExplainer(lr_linkability, train_metafeatures, feature_perturbation="interventional")
-    shap_values_link = explainer_link.shap_values(unseen_data_scaled)
+    explainer_link = shap.LinearExplainer(lr_linkability, x_train, feature_perturbation="interventional")
+    shap_values_link = explainer_link.shap_values(x_test_scaled)
 
     # SHAP Visualization
     shap.summary_plot(shap_values_perf, training_data.columns, show=True)
@@ -156,7 +174,7 @@ def main():
     predict_columns = ['epochs','batch','knn','per','epsilon','technique']
     pred_performance = pd.DataFrame(predictions_performance, columns=['Predictions Performance'])
     pred_linkability = pd.DataFrame(predictions_linkability, columns=['Predictions Linkability'])
-    output = pd.concat([unseen_data.loc[:,predict_columns], pred_performance, pred_linkability], axis=1)
+    output = pd.concat([x_test.loc[:,predict_columns], pred_performance, pred_linkability], axis=1)
 
     output['technique'] = label_encoder.inverse_transform(output['technique'])
     # print(output.sort_values(by=['Predictions Performance'], ascending=False))

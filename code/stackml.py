@@ -5,32 +5,36 @@ import numpy as np
 from sklearn.calibration import LabelEncoder
 from sklearn.linear_model import LinearRegression, BayesianRidge,RidgeCV
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 import itertools
-import re
+import matplotlib.pyplot as plt
 import shap
 from pymfe.mfe import MFE
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 
+
+performance_shap_path = f'{os.getcwd()}/output_analysis/shap_importance_performance.csv'
+linkability_shap_path = f'{os.getcwd()}/output_analysis/shap_importance_link.csv'
+
 # Function to prepare data
 def prepare_data(opt_type):
     # Read data
     training_data = pd.read_csv(f'{os.getcwd()}/output_analysis/metaftk3.csv')
-    unseen_data = pd.read_csv(f'{os.getcwd()}/43.csv')
+    unseen_data = pd.read_csv(f'{os.getcwd()}/data/original/68.csv')
 
     # get 80% of data
     indexes = np.load('indexes.npy', allow_pickle=True).item()
     indexes = pd.DataFrame.from_dict(indexes)
 
-    index = indexes.loc[indexes['ds']==str(43), 'indexes'].values[0]
+    index = indexes.loc[indexes['ds']==str(68), 'indexes'].values[0]
     data_idx = list(set(list(unseen_data.index)) - set(index))
     unseen_data = unseen_data.iloc[data_idx, :]
     
     training_data = training_data.loc[training_data['opt_type']==opt_type].reset_index(drop=True)
-    y_test = training_data.loc[(training_data.ds == 'ds5') & (training_data.QI == 0), 'QI':].reset_index(drop=True)
-    x_train = training_data.loc[training_data.ds!='ds5'].reset_index(drop=True)
+    y_test = training_data.loc[(training_data.ds == 'ds68') & (training_data.QI == 0), 'QI':].reset_index(drop=True)
+    x_train = training_data.loc[training_data.ds!='ds68'].reset_index(drop=True)
 
     y_test = y_test[['epochs', 'batch', 'knn', 'per', 'epsilon', 'technique', 'value','test_roc_auc']]
     
@@ -82,6 +86,30 @@ def calculate_rank(predictions_performance, predictions_linkability):
     mean_rank = (rank_performance + rank_linkability) / 2
     return mean_rank
 
+
+def calculate_shap_importance(model, x_train, x_test_scaled, feature_names, output_path, threshold=0.001):
+    explainer = shap.LinearExplainer(model, x_train, feature_perturbation="interventional")
+    shap_values = explainer.shap_values(x_test_scaled)
+
+    # Calculate Mean Absolute SHAP Values
+    mean_abs_shap = np.abs(shap_values).mean(axis=0)
+
+    # Create a DataFrame for Feature Importance
+    shap_importance = pd.DataFrame({
+        'Feature': feature_names,
+        'Mean_SHAP': mean_abs_shap
+    }).sort_values(by='Mean_SHAP', ascending=False)
+
+    # Filter Features Based on Threshold
+    selected_features = shap_importance[shap_importance['Mean_SHAP'] > threshold]
+    
+    # Save Results to CSV
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    selected_features.to_csv(output_path, index=False)
+
+    return shap_importance
+
+
 def main():
     nan_to_keep = ['QI', 'epochs', 'batch', 'knn', 'per', 'epsilon']
     label_encoder = LabelEncoder()
@@ -102,7 +130,7 @@ def main():
     training_data = training_data.drop(columns=['ds_complete','ds','opt_type','QI'])
     # Two possible ways: predict considering the QIs, or general solution (without QIS), we chose the second approach
     # del training_data['QI']
-    
+
     # Generate pipeline parameters for testing
     city_params, deep_learning_params, privateSMOTE_params = create_testing_pipelines()
 
@@ -147,28 +175,27 @@ def main():
     x_test_scaled = scaler.transform(x_test)
 
     # Train linear regression model for predictive performance
-    lr_performance = LinearRegression()
+    lr_performance = BayesianRidge()
     lr_performance.fit(x_train, y_train_roc_auc)
+
     predictions_performance = lr_performance.predict(x_test_scaled)
     print(mean_absolute_error(y_test['test_roc_auc'].values, predictions_performance))
 
     # Train linear regression model for linkability
-    lr_linkability = LinearRegression()
+    lr_linkability = BayesianRidge()
     lr_linkability.fit(x_train, y_train_linkability)
     predictions_linkability = lr_linkability.predict(x_test_scaled)
     print(mean_absolute_error(y_test['value'].values, predictions_linkability))
 
-    #  SHAP Explanations
-    print("Calculating SHAP values for performance model...")
-    explainer_perf = shap.LinearExplainer(lr_performance, x_train, feature_perturbation="interventional")
-    shap_values_perf = explainer_perf.shap_values(x_test_scaled)
-    print("Calculating SHAP values for linkability model...")
-    explainer_link = shap.LinearExplainer(lr_linkability, x_train, feature_perturbation="interventional")
-    shap_values_link = explainer_link.shap_values(x_test_scaled)
+    # Calculate SHAP for performance model
+    shap_perf = calculate_shap_importance(lr_performance,x_train,x_test_scaled,
+        training_data.iloc[:, :-2].columns,performance_shap_path)
+    # shap.summary_plot(shap_perf, training_data.columns, show=False)
 
-    # SHAP Visualization
-    shap.summary_plot(shap_values_perf, training_data.columns, show=True)
-    shap.summary_plot(shap_values_link, training_data.columns, show=True)
+    # Calculate SHAP for linkability model
+    shap_link = calculate_shap_importance(lr_linkability,x_train,x_test_scaled,
+        training_data.iloc[:, :-2].columns,linkability_shap_path)
+    # shap.summary_plot(shap_link, training_data.columns, show=False)
 
     # Create DataFrame with predictions
     predict_columns = ['epochs','batch','knn','per','epsilon','technique']

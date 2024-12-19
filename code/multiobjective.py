@@ -39,7 +39,7 @@ plt.grid(True)
 #plt.xticks(np.arange(min(predictions['Predictions Performance']), max(predictions['Predictions Performance'])+0.001, 0.001))
 #plt.gca().xaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))  # Adjust decimal places as needed
 # %%
-pareto_rank = predictions.head(15)
+pareto_rank = predictions.head(20)
 sns.set_style("darkgrid")
 plt.figure(figsize=(11,7))
 sns.scatterplot(data=predictions, x="Predictions Performance", y="Predictions Linkability", color='#0083FF', s=70, label='All Solutions', alpha=0.65)
@@ -50,3 +50,5 @@ plt.ylabel('Linkability Predictions')
 plt.legend()
 plt.grid(True)
 # plt.savefig(f'{os.path.dirname(os.getcwd())}/output_analysis/plots/pareto_rank_hyperband.pdf', bbox_inches='tight')
+
+# %%
